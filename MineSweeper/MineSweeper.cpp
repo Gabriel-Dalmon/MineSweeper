@@ -12,26 +12,30 @@ typedef struct Case {
 
 } Case;
 
+float getArrayLength(int *a);
 
 int main()
 {
 
-    int board[5][5];
+    int a[5];
+    float aLength = getArrayLength(a);
+    float aLengthOut = sizeof(a) / sizeof(a[0]);
+    printf("%f\n", aLength);
+    printf("%f\n", aLengthOut);
+
+    Case board[5][5];
 
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++) {
-            printf("%d", board[i][j]);
+            board[i][j].content = 0;
+            printf("%d", board[i][j].content);
         }
         printf("\n");
     }
 
-    printf("%d", board[2][2]);
-
-    // std::cout << "Hello World!\n";
-    int lknbxdlknbsbs = 42;
 }
 
-
-//void displayBoard( Board board) {
-
-// }
+float getArrayLength(int *a) {
+    float length = sizeof(*a) / sizeof(a[0]);
+    return length;
+}
