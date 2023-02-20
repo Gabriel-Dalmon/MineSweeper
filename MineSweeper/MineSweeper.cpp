@@ -28,7 +28,7 @@ int main()
     printf("%d", board[2][2]);
 
     // std::cout << "Hello World!\n";
-    int qopqnhùo = 42;
+    int lknbxdlknbsbs = 42;
 }
 
 
