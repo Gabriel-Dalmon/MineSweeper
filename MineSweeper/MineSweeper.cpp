@@ -13,25 +13,38 @@ typedef struct Case {
 } Case;
 
 
+//void displayBoard(Case board[][]);
+
 int main()
 {
 
-    int board[5][5];
+    Case board[5][5];
 
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++) {
-            printf("%d", board[i][j]);
+            board[i][j].content = 0;
         }
         printf("\n");
     }
 
-    printf("%d", board[2][2]);
+    for (int i = 0; i < 5; i++) {
+        printf("%d", i);
+    }
 
-    // std::cout << "Hello World!\n";
-    int lknbxdlknbsbs = 42;
+    for (int i = 0; i < 5; i++)
+        printf("%d", i);
+        for (int j = 0; j < 5; j++) {
+            printf("%d", board[i][j].content);
+        }
+        printf("\n");
+    }
+
+
 }
 
 
-//void displayBoard( Board board) {
+//void displayBoard( Case board[][]) {
+    
+//}
 
-// }
+
