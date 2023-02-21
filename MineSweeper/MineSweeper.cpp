@@ -7,35 +7,44 @@
 
 typedef struct Case {
     int content;
-    int state;
+    int isVisible; // 1 = visible, 0 = hidden;
     int indicator;
 
 } Case;
 
-float getArrayLength(int *a);
+typedef struct Board {
+    int iSize;
+    Case ** grid;
+
+} Board;
+
+void displayBoard(Board oBoard);
 
 int main()
 {
 
-    int a[5];
-    float aLength = getArrayLength(a);
-    float aLengthOut = sizeof(a) / sizeof(a[0]);
-    printf("%f\n", aLength);
-    printf("%f\n", aLengthOut);
-
-    Case board[5][5];
+    Board oBoard;
+    oBoard.iSize = 5;
+    oBoard.grid[oBoard.iSize][oBoard.iSize];
 
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++) {
-            board[i][j].content = 0;
-            printf("%d", board[i][j].content);
+            oBoard.grid[i][j].content = 0;
+            oBoard.grid[i][j].isVisible = 0;
+        }
+    }
+}
+
+void displayBoard(Board oBoard) {
+    for (int i = 0; i < oBoard.iSize; i++) {
+        for (int j = 0; j < oBoard.iSize; j++) {
+            if (oBoard.grid[i][j].isVisible == 0) {
+                printf("[]");
+            }
+            else {
+                printf("%d", oBoard.grid[i][j].content);
+            }
         }
         printf("\n");
     }
-
-}
-
-float getArrayLength(int *a) {
-    float length = sizeof(*a) / sizeof(a[0]);
-    return length;
 }
