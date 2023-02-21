@@ -7,29 +7,37 @@
 
 typedef struct Case {
     int content;
-    int state;
+    int isVisible; // 1 = visible, 0 = hidden;
     int indicator;
 
 } Case;
 
 typedef struct Board {
-    Case** grid;
+    Case grid[5][5];
     int size;
 } Board;
 
 
 Board init(int size);
-//void displayBoard(Case board[][]);
+void displayBoard(Board oBoard);
 
 int main()
 {
 
     Board table = init(5);
-    
+    displayBoard(table);
 
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5; j++) {
-            printf("%d", table.grid[i][j].content);
+}
+
+void displayBoard(Board oBoard) {
+    for (int i = 0; i < oBoard.size; i++) {
+        for (int j = 0; j < oBoard.size; j++) {
+            if (oBoard.grid[i][j].isVisible == 0) {
+                printf("[]");
+            }
+            else {
+                printf("%d", oBoard.grid[i][j].content);
+            }
         }
         printf("\n");
     };
@@ -39,11 +47,11 @@ int main()
 Board init(int size) {
     Board table;
     table.size = size;
-    table.grid[size][size];
 
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++) {
             table.grid[i][j].content = 0;
+            table.grid[i][j].isVisible = 0;
         }
     };
     
