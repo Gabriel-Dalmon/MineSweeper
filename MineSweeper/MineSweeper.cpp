@@ -1,9 +1,8 @@
 // Démineur.cpp : Ce fichier contient la fonction 'main'. L'exécution du programme commence et se termine à cet endroit.
 //
 
-#include <iostream>
 #include <stdio.h>
-
+#include <time.h>
 
 typedef struct Case {
     int content;
@@ -26,6 +25,9 @@ int main()
 
     Board table = init(5);
     displayBoard(table);
+    int r = time(NULL) % 2;
+    printf("%d", r);
+
 
 }
 
