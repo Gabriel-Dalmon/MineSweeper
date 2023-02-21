@@ -12,32 +12,40 @@ typedef struct Case {
 
 } Case;
 
-float getArrayLength(int *a);
+typedef struct Board {
+    Case** grid;
+    int size;
+} Board;
 
+
+Board init(int size);
 //void displayBoard(Case board[][]);
 
 int main()
 {
 
-    int a[5];
-    float aLength = getArrayLength(a);
-    float aLengthOut = sizeof(a) / sizeof(a[0]);
-    printf("%f\n", aLength);
-    printf("%f\n", aLengthOut);
-
-    Case board[5][5];
+    Board table = init(5);
+    
 
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++) {
-            board[i][j].content = 0;
-            printf("%d", board[i][j].content);
+            printf("%d", table.grid[i][j].content);
         }
         printf("\n");
-    }
+    };
 
-    printf("%d", board[2][2]);
+}
 
-float getArrayLength(int *a) {
-    float length = sizeof(*a) / sizeof(a[0]);
-    return length;
+Board init(int size) {
+    Board table;
+    table.size = size;
+    table.grid[size][size];
+
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            table.grid[i][j].content = 0;
+        }
+    };
+    
+    return table;
 }
