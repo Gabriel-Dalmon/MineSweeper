@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdlib.h>
 
 typedef struct Case {
     int content;
@@ -64,6 +65,7 @@ void displayBoard(Board oBoard) {
 
 Board init(int size, int mines) {
     Board table;
+    //Case* remaining = (Case*)malloc(sizeof(Case) * mines);
     table.size = size;
     table.grid = (Case*)malloc(sizeof(Case) * size * size);
 
@@ -106,10 +108,6 @@ void reveal(Board* table, int x, int y) {
                 }
             }
         }
-        //return table;
-    }
-    else {
-        //return table;
     };
 }
 
