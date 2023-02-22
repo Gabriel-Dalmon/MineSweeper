@@ -19,8 +19,8 @@ typedef struct Board {
 
 Board init(int size);
 void displayBoard(Board oBoard);
-Board reveal(Board table, int x, int y);
-int check(Board table, int x, int y);
+void reveal(Board* table, int x, int y);
+void check(Board* table, int x, int y);
 
 int main()
 {
@@ -33,7 +33,7 @@ int main()
         int x;
         int y;
         int res = scanf_s("%d%d", &x, &y);
-        table = reveal(table, x, y);
+        reveal(&table, x, y);
         if (table.grid[y][x].content == 9) {
             printf("c'est lose");
             isPlaying = 0;
@@ -76,45 +76,43 @@ Board init(int size) {
 }
 
 
-Board reveal(Board table, int x, int y) {
-    if (table.grid[y][x].content != 9 && table.grid[y][x].isVisible == 0) {
-        table.grid[y][x].isVisible = 1;
-        table.grid[y][x].content = check(table, x, y);
-        if (table.grid[y][x].content == 0) {
+void reveal(Board* table, int x, int y) {
+    if (table->grid[y][x].content != 9 && table->grid[y][x].isVisible == 0) {
+        table->grid[y][x].isVisible = 1;
+        check(table, x, y);
+        if (table->grid[y][x].content == 0) {
             for (int i = -1; i < 2; i++) {  
-                if(x+i >=0 && x+i < table.size){
+                if(x+i >=0 && x+i < table->size){
                     for (int j = -1; j < 2; j++) {
-                        if(y+j >=0 && y+j < table.size){
-                            if(table.grid[y+j][x+i].isVisible != 1){
-                                table = reveal(table, x + i, y + j);
+                        if(y+j >=0 && y+j < table->size){
+                            if(table->grid[y+j][x+i].isVisible != 1){
+                                reveal(table, x + i, y + j);
                             }
                         }
                     }
                 }
             }
         }
-        return table;
+        //return table;
     }
     else {
-        return table;
+        //return table;
     };
 }
 
-int check(Board table, int x, int y) {
-    int upState = 0;
-    if (table.grid[y][x].content != 9)
+void check(Board* table, int x, int y) {
+    if (table->grid[y][x].content != 9)
     {
         for (int i = -1; i < 2; i++) {
-            if (x + i >= 0 && x + i < table.size) {
+            if (x + i >= 0 && x + i < table->size) {
                 for (int j = -1; j < 2; j++) {
-                    if (y + j >= 0 && y + j < table.size) {
-                        if (table.grid[y + j][x + i].content == 9) {
-                            upState += 1;
+                    if (y + j >= 0 && y + j < table->size) {
+                        if (table->grid[y + j][x + i].content == 9) {
+                            table->grid[y][x].content += 1;
                         }
                     }
                 }
             }
         }
     }
-    return upState;
 }
