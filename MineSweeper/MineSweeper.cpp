@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 
 typedef struct Case {
     int content;
@@ -17,7 +18,7 @@ typedef struct Board {
 } Board;
 
 
-Board init(int size);
+Board init(int size, int mines);
 void displayBoard(Board oBoard);
 void reveal(Board* table, int x, int y);
 void check(Board* table, int x, int y);
@@ -25,7 +26,7 @@ void check(Board* table, int x, int y);
 int main()
 {
 
-    Board table = init(15);
+    Board table = init(15, 50);
     int isPlaying = 1;
     
     while(isPlaying == 1)
@@ -58,19 +59,28 @@ void displayBoard(Board oBoard) {
 
 }
 
-Board init(int size) {
+Board init(int size, int mines) {
     Board table;
+    //Case* remaining = (Case*)malloc(sizeof(Case) * mines);
     table.size = size;
-    int r = time(NULL);
-
+    
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            if( r % 6 == 0){ table.grid[i][j].content = 9;}
-            else{ table.grid[i][j].content = 0; }            
-            table.grid[i][j].isVisible = 0;
-            r += 7; r *= 3;
+            table.grid[i][j].content = 0;
         }
     };
+
+    int r = time(NULL);
+    while (mines > 0) {
+        int x = abs(r % size);
+        r *= 3; r += 7;
+        int y = abs(r % size);
+        r *= 3; r += 7;
+        if(table.grid[x][y].content == 0){
+            table.grid[x][y].content = 9;
+            mines -= 1;
+        }
+    }
     
     return table;
 }
@@ -93,10 +103,6 @@ void reveal(Board* table, int x, int y) {
                 }
             }
         }
-        //return table;
-    }
-    else {
-        //return table;
     };
 }
 
