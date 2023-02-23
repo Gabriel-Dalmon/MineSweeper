@@ -10,6 +10,7 @@ typedef struct Case {
     int content;
     int isVisible; // 1 = visible, 0 = hidden;
     int indicator;
+    int flag = 0; //1 = drapeau, 0 = pas de drapeau
 
 } Case;
 
@@ -22,12 +23,14 @@ Board init(int size, int mines);
 void displayBoard(Board oBoard);
 void reveal(Board* table, int x, int y);
 void check(Board* table, int x, int y);
+int checkWin(Board* table);
+void setFlag(Board* table, int x, int y);
 
 int main()
 {
     int size;
     printf("Entrez une taille de grille : ");
-    int res = scanf_s("%d", &size);
+    int resOne = scanf_s("%d", &size);
 
     Board table = init(size, 50);
 
@@ -35,15 +38,36 @@ int main()
     
     while(isPlaying == 1)
     {
+        char flag;
+        printf("flag ? (y / n)");
+        int resTwo = scanf_s(" %c", &flag, 1);
+
         int x;
         int y;
-        int res = scanf_s("%d%d", &x, &y);
-        reveal(&table, x, y);
-        if (table.grid[x + y*table.size].content == 9) {
-            printf("c'est lose\n");
-            isPlaying = 0;
+        int resThree = scanf_s("%d%d", &x, &y);
+
+        if(flag == 'n')
+        {
+            reveal(&table, x, y);
+            if (table.grid[x + y * table.size].content == 9) {
+                printf("c'est lose\n");
+                isPlaying = 0;
+            }
         }
+        else if (flag == 'y')
+        {
+            setFlag(&table, x, y);
+        }
+        else {
+            printf("fais un effort mon reuf\n");
+        }
+
+
         displayBoard(table);
+        if(checkWin(&table)==1){
+            isPlaying = 0;
+            printf("you won, congrats boy");
+        }
     }
 
     return 0;
@@ -52,7 +76,10 @@ int main()
 void displayBoard(Board oBoard) {
     for (int i = 0; i < oBoard.size; i++) {
         for (int j = 0; j < oBoard.size; j++) {
-            if (oBoard.grid[i * oBoard.size + j].isVisible == 0) {
+            if (oBoard.grid[i * oBoard.size + j].flag == 1) {
+                printf("F");
+            }
+            else if (oBoard.grid[i * oBoard.size + j].isVisible == 0) {
                 printf("H");
             }
             else {
@@ -126,4 +153,18 @@ void check(Board* table, int x, int y) {
             }
         }
     }
+}
+
+int checkWin(Board* table) {
+    for (int i = 0; i < table->size * table->size; i++) {
+        if (table->grid[i].content!=9 && table->grid[i].isVisible==1) {
+            return 0;
+        }
+    }
+    return 1;
+}//+1 a chaque reveal; size²-mines ==value ?
+
+
+void setFlag (Board* table, int x, int y) {
+    table->grid[(x + y * table->size)].flag = 1;
 }
