@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdlib.h>
 
 typedef struct Case {
     int content;
@@ -26,6 +25,7 @@ void displayBoard(Board oBoard);
 void reveal(Board* table, int x, int y);
 void check(Board* table, int x, int y);
 void setFlag(Board* table, int x, int y);
+void generateMines(Board* oBoard);
 
 int main()
 {
