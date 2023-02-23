@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdlib.h>
 
 typedef struct Case {
     int content;
@@ -33,20 +32,33 @@ int main()
     printf("Entrez une taille de grille : ");
     int resOne = scanf_s("%d", &size);
 
-    Board table = init(size, 30);
+    Board table = init(size, 1);
 
     int isPlaying = 1;
     
     while(isPlaying == 1)
     {
-        char flag;
-        printf("flag ? (y / n)");
-        int resTwo = scanf_s(" %c", &flag, 1);
+        char flag = 'o';
 
-        int x;
-        int y;
-        int resThree = scanf_s("%d%d", &x, &y);
+        while (flag != 'y' && flag != 'n') {
+            printf("flag ? (y / n)");
+            int resTwo = scanf_s(" %c", &flag, 1);
+        }
+        
+      
 
+        int x = -1;
+        int y = -1;
+        int resThree = 0;
+
+        while (resThree != 2 || 0 > x || x >= size || 0 > y || y >= size) {
+            printf("choisissez les coordonnées (x puis y)");
+            int ch = getchar();
+            resThree = scanf_s(" %d %d", &x, &y);
+        }
+
+
+        
         if(flag == 'n')
         {
             reveal(&table, x, y);
@@ -56,15 +68,12 @@ int main()
             }
             else if (table.remaining == 0) {
                 isPlaying = 0;
-                printf("you won, congrats boy");
+                printf("you won, congrats boy\n");
             }
         }
-        else if (flag == 'y')
+        else
         {
             setFlag(&table, x, y);
-        }
-        else {
-            printf("fais un effort mon reuf\n");
         }
 
 
@@ -80,13 +89,13 @@ void displayBoard(Board oBoard) {
     for (int i = 0; i < oBoard.size; i++) {
         for (int j = 0; j < oBoard.size; j++) {
             if (oBoard.grid[i * oBoard.size + j].flag == 1) {
-                printf("F");
+                printf("\033[0;32mF\033[0;37m");
             }
             else if (oBoard.grid[i * oBoard.size + j].isVisible == 0) {
-                printf("H");
+                printf("\033[0; 32mH\033[0;37m");
             }
             else {
-                printf("%d", oBoard.grid[i * oBoard.size + j].content);
+                printf("\033[0;34m%d\033[0;37m", oBoard.grid[i * oBoard.size + j].content);
             }
         }
         printf("\n");
