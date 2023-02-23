@@ -16,6 +16,8 @@ typedef struct Case {
 typedef struct Board {
     Case* grid;
     int size;
+    int iMinesAmount;
+    int iRevealedCasesAmount;
 } Board;
 
 Board init(int size, int mines);
@@ -29,7 +31,7 @@ int main()
     printf("Entrez une taille de grille : ");
     int res = scanf_s("%d", &size);
 
-    Board table = init(size, 50);
+    Board table = init(size, 30);
 
     int isPlaying = 1;
     
@@ -46,6 +48,7 @@ int main()
         displayBoard(table);
     }
 
+    free(table.grid);
     return 0;
 }
 
@@ -63,33 +66,50 @@ void displayBoard(Board oBoard) {
     }
 }
 
-Board init(int size, int mines) {
+Board init(int size, int iMinesAmount) {
     Board table;
-    //Case* remaining = (Case*)malloc(sizeof(Case) * mines);
     table.size = size;
-    table.grid = (Case*)malloc(sizeof(Case) * size * size);
+    table.grid = (Case*)malloc(sizeof(Case) * table.size * table.size);
+    table.iMinesAmount = iMinesAmount;
+
 
     for (int j = 0; j < table.size * table.size; j++) {
         table.grid[j].content = 0;         
         table.grid[j].isVisible = 0;
     };
 
+    
+    for (int j = 0; j < table.size * table.size; j++) {
+
+    }
+
      int r = time(NULL);
-     while (mines > 0) {
+     int i = 0;
+     while (table.iMinesAmount > 0) {
+         i++;
          int x = abs(r % size);
-         r *= 3; r += 7;
+         r *= time(NULL) % 9; r += 1;
          int y = abs(r % size);
-         r *= 3; r += 7;
+         r *= time(NULL) % 9;
          if (table.grid[x + y * table.size].content == 0) {
              table.grid[x + y * table.size].content = 9;
-             mines -= 1;
+             table.iMinesAmount -= 1;
          }
-         printf("%d", mines);
+         printf("Nombre d'itérations : %d\n", i);
      }
-    
+     
+     displayBoard(table);
     return table;
 }
 
+void generateMines(Board* oBoard) {
+    int* freeCases = (int*)malloc(sizeof(int) * oBoard->size * oBoard->size * 2);
+
+    for (int i = 0; i < oBoard->iMinesAmount; i++) {
+        int a;
+    }
+
+}
 
 void reveal(Board* table, int x, int y) {
     if (table->grid[x + y * table->size].content != 9 && table->grid[x + y * table->size].isVisible == 0) {
