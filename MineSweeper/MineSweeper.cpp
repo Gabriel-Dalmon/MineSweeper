@@ -27,6 +27,7 @@ void displayBoard(Board oBoard);
 void reveal(Board* table, int x, int y);
 void check(Board* table, int x, int y);
 void setFlag(Board* table, int x, int y);
+void generateMines(Board* oBoard);
 
 int main()
 {
