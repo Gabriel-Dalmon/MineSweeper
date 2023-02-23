@@ -17,13 +17,13 @@ typedef struct Case {
 typedef struct Board {
     Case* grid;
     int size;
+    int remaining;
 } Board;
 
 Board init(int size, int mines);
 void displayBoard(Board oBoard);
 void reveal(Board* table, int x, int y);
 void check(Board* table, int x, int y);
-int checkWin(Board* table);
 void setFlag(Board* table, int x, int y);
 
 int main()
@@ -53,6 +53,10 @@ int main()
                 printf("c'est lose\n");
                 isPlaying = 0;
             }
+            else if (table.remaining == 0) {
+                isPlaying = 0;
+                printf("you won, congrats boy");
+            }
         }
         else if (flag == 'y')
         {
@@ -64,10 +68,7 @@ int main()
 
 
         displayBoard(table);
-        if(checkWin(&table)==1){
-            isPlaying = 0;
-            printf("you won, congrats boy");
-        }
+            
     }
 
     return 0;
@@ -95,6 +96,7 @@ Board init(int size, int mines) {
     //Case* remaining = (Case*)malloc(sizeof(Case) * mines);
     table.size = size;
     table.grid = (Case*)malloc(sizeof(Case) * size * size);
+    table.remaining = size * size - mines;
 
     for (int j = 0; j < table.size * table.size; j++) {
         table.grid[j].content = 0;         
@@ -121,6 +123,7 @@ Board init(int size, int mines) {
 void reveal(Board* table, int x, int y) {
     if (table->grid[x + y * table->size].content != 9 && table->grid[x + y * table->size].isVisible == 0) {
         table->grid[x + y * table->size].isVisible = 1;
+        table->remaining -= 1;
         check(table, x, y);
         if (table->grid[x + y * table->size].content == 0) {
             for (int i = -1; i < 2; i++) {  
@@ -154,15 +157,6 @@ void check(Board* table, int x, int y) {
         }
     }
 }
-
-int checkWin(Board* table) {
-    for (int i = 0; i < table->size * table->size; i++) {
-        if (table->grid[i].content!=9 && table->grid[i].isVisible==1) {
-            return 0;
-        }
-    }
-    return 1;
-}//+1 a chaque reveal; size²-mines ==value ?
 
 
 void setFlag (Board* table, int x, int y) {
