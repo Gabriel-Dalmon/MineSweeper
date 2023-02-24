@@ -28,6 +28,8 @@ void reveal(Board* table, int x, int y);
 void check(Board* table, int x, int y);
 void setFlag(Board* table, int x, int y);
 void generateMines(Board* oBoard);
+void OddToEvenByLower(int* number);
+
 
 int main()
 {
@@ -37,7 +39,7 @@ int main()
 
     char zqsd;
     printf("mode zqsd ? (y/n) ");
-    int resFour = scanf_s("%c", &zqsd, 1);
+    int resFour = scanf_s(" %c", &zqsd, 1);
 
     Board table = init(size, 30);
 
@@ -102,7 +104,9 @@ int main()
 
             while (resThree != 2 || 0 > x || x >= size || 0 > y || y >= size) {
                 printf("choisissez les coordonnées (x puis y)");
-                int ch = getchar();
+                while (getchar() != '\n' && getchar() != EOF) {
+                    int ch = getchar();
+                }
                 resThree = scanf_s(" %d %d", &x, &y);
             }
 
@@ -182,7 +186,7 @@ Board init(int size, int iMinesAmount) {
 
      int r = time(NULL);
      int i = 0;
-     while (table.iMinesAmount > 0) {
+     while (iMinesAmount > 0) {
          i++;
          int x = abs(r % size);
          r *= time(NULL) % 9; r += 1;
@@ -190,22 +194,60 @@ Board init(int size, int iMinesAmount) {
          r *= time(NULL) % 9;
          if (table.grid[x + y * table.size].content == 0) {
              table.grid[x + y * table.size].content = 9;
-             table.iMinesAmount -= 1;
+             iMinesAmount -= 1;
          }
-         printf("Nombre d'itérations : %d\n", i);
      }
-     
+     generateMines(&table);
      displayBoard(table);
     return table;
 }
 
 void generateMines(Board* oBoard) {
-    int* freeCases = (int*)malloc(sizeof(int) * oBoard->size * oBoard->size * 2);
-
-    for (int i = 0; i < oBoard->iMinesAmount; i++) {
-        int a;
+    int iFreeCasesLength = oBoard->size * oBoard->size * 2;
+    int* freeCases = (int*)malloc(sizeof(int) * iFreeCasesLength);
+    
+    for (int i = 0; i < oBoard->size; i++) {
+        for (int j = 0; j < oBoard->size; j++) {
+            freeCases[i * 2 + j * 2] = i;
+            freeCases[i * 2 + j * 2 + 1] = j;
+            printf("(%d|", freeCases[i * 2 + j * 2]);
+            printf("%d)\n", freeCases[i * 2 + j * 2 + 1]);
+        }
     }
 
+    int* variable = (int*)realloc(freeCases, sizeof(int) * iFreeCasesLength - 2);
+    if (variable != NULL) {
+        freeCases = variable;
+        iFreeCasesLength -= 2;
+    }
+
+    printf("\n\nRealocated\n\n");
+    for (int i = 0; i < oBoard->size; i++) {
+        for (int j = 0; j < oBoard->size; j++) {
+            if (i != oBoard->size - 1 || j != oBoard->size - 1) {
+                freeCases[i * 2 + j * 2] = i;
+                freeCases[i * 2 + j * 2 + 1] = j;
+                printf("(%d|", freeCases[i * 2 + j * 2]);
+                printf("%d)\n", freeCases[i * 2 + j * 2 + 1]);
+            }
+
+        }
+    }
+
+    printf("Mines amount : %d", oBoard->iMinesAmount);
+    int rand = time(NULL);
+    for (int i = 0; i < 1; i++) {
+        int randFreeCaseIndex = abs(rand % iFreeCasesLength);
+        OddToEvenByLower(&randFreeCaseIndex);
+        rand = (rand + 1) * 7;
+    }
+    free(freeCases);
+}
+
+void OddToEvenByLower(int* number) {
+    if (*number % 2 == 1) {
+        (*number)--;
+    }
 }
 
 void reveal(Board* table, int x, int y) {
