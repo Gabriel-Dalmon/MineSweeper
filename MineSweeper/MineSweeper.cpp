@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <conio.h>
+#include <math.h>
 
 typedef struct Case {
     int content;
@@ -29,59 +30,68 @@ void check(Board* table, int x, int y);
 void setFlag(Board* table, int x, int y);
 void generateMines(Board* oBoard);
 void OddToEvenByLower(int* number);
+void checkWin(Board* table, int x, int y, int* playing);
 
 
 int main()
 {
     int size;
     printf("Entrez une taille de grille : ");
-    int resOne = scanf_s("%d", &size);
+    int res = scanf_s("%d", &size);
 
-    char zqsd;
-    printf("mode zqsd ? (y/n) ");
-    int resFour = scanf_s(" %c", &zqsd, 1);
+    int difficultie = 0;
+    while (difficultie != 1 && difficultie !=2 && difficultie != 3)
+    {
+        printf("difficulté ? (1/2/3)");
+        res = scanf_s("%d", &difficultie);
+    }
+    difficultie = 6 / difficultie;
 
-    Board table = init(size, 30);
+    char zqsd = 'o';
+    while(zqsd !='y' && zqsd != 'n')
+    {
+        printf("mode zqsd ? (y/n) ");
+        res = scanf_s(" %c", &zqsd, 1);
+    }
+
+    Board table = init(size, 30); //round(size/difficultie));
 
     int isPlaying = 1;
 
-    if(zqsd=='y')
+    system("CLS");
+
+    if(zqsd=='y')//
     {
         int position[2];
         position[0] = 0;
         position[1] = 0;
         table.grid[0].current = 1;
+        displayBoard(table);
+
         while (isPlaying == 1)
         {
+
+
+            system("CLS");
+            displayBoard(table);
+
             char move = _getch();
 
             table.grid[position[0] + size * position[1]].current = 0;
 
-            if (move == 'z') { position[1] -= 1; }
-            else if (move == 'q') { position[0] -= 1; }
-            else if (move == 's') { position[1] += 1; }
-            else if (move == 'd') { position[0] += 1; }
+            if (move == 'z') { if (position[1] > 0) {position[1] --; } }
+            else if (move == 'q') { if (position[0]%size > 0) { position[0] --; } }
+            else if (move == 's') { if (position[1] < size - 1){ position[1] ++; } }
+            else if (move == 'd') { if (position[0] % size < size - 1) { position[0] ++; } }
             else if (move == '2') { setFlag(&table, position[0], position[1]); }
             else if (move == '1') {
                 reveal(&table, position[0], position[1]);
-                if (table.grid[position[0] + position[1] * table.size].content == 9) {
-                    printf("c'est lose\n");
-                    isPlaying = 0;
-                }
-                else if (table.remaining == 0) {
-                    printf("you won, congrats boy\n");
-                    isPlaying = 0;
-                }
+                checkWin(&table, position[0], position[1], &isPlaying);
             }
 
-
+            
 
             table.grid[position[0] + size * position[1]].current = 1;
-
-            printf("\n\n");
-            if (position[0] >= 0 && position[0] < size && position[1] >= 0 && position[1] < size) {
-                displayBoard(table);
-            }
 
         }
     }
@@ -93,21 +103,21 @@ int main()
 
             while (flag != 'y' && flag != 'n') {
                 printf("flag ? (y / n)");
-                int resTwo = scanf_s(" %c", &flag, 1);
+                res = scanf_s(" %c", &flag, 1);
             }
 
 
 
             int x = -1;
             int y = -1;
-            int resThree = 0;
+            res = 0;
 
-            while (resThree != 2 || 0 > x || x >= size || 0 > y || y >= size) {
+            while (res != 2 || 0 > x || x >= size || 0 > y || y >= size) {
                 printf("choisissez les coordonnées (x puis y)");
                 while (getchar() != '\n' && getchar() != EOF) {
                     int ch = getchar();
                 }
-                resThree = scanf_s(" %d %d", &x, &y);
+                res = scanf_s(" %d %d", &x, &y);
             }
 
 
@@ -115,14 +125,7 @@ int main()
             if (flag == 'n')
             {
                 reveal(&table, x, y);
-                if (table.grid[x + y * table.size].content == 9) {
-                    printf("c'est lose\n");
-                    isPlaying = 0;
-                }
-                else if (table.remaining == 0) {
-                    isPlaying = 0;
-                    printf("you won, congrats boy\n");
-                }
+                checkWin(&table, x, y, &isPlaying);
             }
             else
             {
@@ -131,6 +134,8 @@ int main()
 
 
             displayBoard(table);
+
+            system("CLS");
         }
     }      
 }
@@ -141,24 +146,27 @@ void displayBoard(Board oBoard) {
             if(oBoard.grid[i * oBoard.size + j].current == 1)
             {
                 if (oBoard.grid[i * oBoard.size + j].flag == 1) {
-                    printf("\x1b[46mF\033[0;37m");
+                    printf("\x1b[46mF\033[0;37m ");
                 }
                 else if (oBoard.grid[i * oBoard.size + j].isVisible == 0) {
-                    printf("\x1b[46mH\033[0;37m");
+                    printf("\x1b[46mX\033[0;37m ");
                 }
                 else {
-                    printf("\x1b[46m%d\033[0;37m", oBoard.grid[i * oBoard.size + j].content);
+                    printf("\x1b[46m%d\033[0;37m ", oBoard.grid[i * oBoard.size + j].content);
                 }
             }
             else {
                 if (oBoard.grid[i * oBoard.size + j].flag == 1) {
-                    printf("\033[0;32mF\033[0;37m");
+                    printf("\033[0;32mF\033[0;37m ");
                 }
                 else if (oBoard.grid[i * oBoard.size + j].isVisible == 0) {
-                    printf("\033[0; 32mH\033[0;37m");
+                    printf("\033[0; 32mX\033[0;37m ");
+                }
+                else if (oBoard.grid[i * oBoard.size + j].content == 0){ // on sait que la case est visible
+                    printf("  ");
                 }
                 else {
-                    printf("\033[0;34m%d\033[0;37m", oBoard.grid[i * oBoard.size + j].content);
+                    printf("\033[0;31m%d\033[0;37m ", oBoard.grid[i * oBoard.size + j].content);
                 }
             }
         }
@@ -290,5 +298,23 @@ void check(Board* table, int x, int y) {
 
 
 void setFlag (Board* table, int x, int y) {
-    table->grid[(x + y * table->size)].flag = 1;
+    if (table->grid[(x + y * table->size)].flag == 1) {
+        table->grid[(x + y * table->size)].flag = 0;
+    }
+    else {
+        table->grid[(x + y * table->size)].flag = 1;
+    }
+}
+
+void checkWin(Board* table, int x, int y, int* playing) {
+    if (table->grid[x + y * table->size].content == 9)
+    {
+        printf("c'est lose\n");
+        *playing = 0;
+    }
+    else if (table->remaining == 0)
+    {
+        printf("you won, congrats boy\n");
+        *playing = 0;
+    }
 }
