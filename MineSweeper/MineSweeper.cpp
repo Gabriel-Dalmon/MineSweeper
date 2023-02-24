@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <conio.h>
+#include <math.h>
 
 typedef struct Case {
     int content;
@@ -37,9 +38,9 @@ int main()
 
     char zqsd;
     printf("mode zqsd ? (y/n) ");
-    int resFour = scanf_s("%c", &zqsd, 1);
+    int resFour = scanf_s(" %c", &zqsd, 1);
 
-    Board table = init(size, 30);
+    Board table = init(size, round(size/4));
 
     int isPlaying = 1;
 
@@ -55,18 +56,20 @@ int main()
 
             table.grid[position[0] + size * position[1]].current = 0;
 
-            if (move == 'z') { position[1] -= 1; }
-            else if (move == 'q') { position[0] -= 1; }
-            else if (move == 's') { position[1] += 1; }
-            else if (move == 'd') { position[0] += 1; }
+            if (move == 'z') { if (position[1] > 0) {position[1] -= 1; } }
+            else if (move == 'q') { if (position[0]%size > 0) { position[0] -= 1; } }
+            else if (move == 's') { if (position[1] < size - 1){ position[1] += 1; } }
+            else if (move == 'd') { if (position[0] % size < size - 1) { position[0] += 1; } }
             else if (move == '2') { setFlag(&table, position[0], position[1]); }
             else if (move == '1') {
                 reveal(&table, position[0], position[1]);
-                if (table.grid[position[0] + position[1] * table.size].content == 9) {
+                if (table.grid[position[0] + position[1] * table.size].content == 9)
+                {
                     printf("c'est lose\n");
                     isPlaying = 0;
                 }
-                else if (table.remaining == 0) {
+                else if (table.remaining == 0)
+                {
                     printf("you won, congrats boy\n");
                     isPlaying = 0;
                 }
@@ -112,8 +115,8 @@ int main()
             {
                 reveal(&table, x, y);
                 if (table.grid[x + y * table.size].content == 9) {
-                    printf("c'est lose\n");
                     isPlaying = 0;
+                    printf("c'est lose\n");
                 }
                 else if (table.remaining == 0) {
                     isPlaying = 0;
@@ -248,5 +251,10 @@ void check(Board* table, int x, int y) {
 
 
 void setFlag (Board* table, int x, int y) {
-    table->grid[(x + y * table->size)].flag = 1;
+    if (table->grid[(x + y * table->size)].flag == 1) {
+        table->grid[(x + y * table->size)].flag = 0;
+    }
+    else {
+        table->grid[(x + y * table->size)].flag = 1;
+    }
 }
