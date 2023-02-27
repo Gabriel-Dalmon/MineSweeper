@@ -29,13 +29,19 @@ void reveal(Board* table, int x, int y);
 void check(Board* table, int x, int y);
 void setFlag(Board* table, int x, int y);
 void generateMines(Board* oBoard);
+void oddToEvenByLower(int* number);
 void checkWin(Board* table, int x, int y, int* playing);
+
 
 int main()
 {
     int size;
     printf("Entrez une taille de grille : ");
     int res = scanf_s("%d", &size);
+
+    int iMinesAmount;
+    printf("Enter the amount of mines present on the grid : ");
+    scanf_s("%d", &iMinesAmount);
 
     int difficultie = 0;
     while (difficultie != 1 && difficultie !=2 && difficultie != 3)
@@ -52,7 +58,7 @@ int main()
         res = scanf_s(" %c", &zqsd, 1);
     }
 
-    Board table = init(size, 30); //round(size/difficultie));
+    Board table = init(size, iMinesAmount); //round(size/difficultie));
 
     int isPlaying = 1;
 
@@ -112,7 +118,9 @@ int main()
 
             while (res != 2 || 0 > x || x >= size || 0 > y || y >= size) {
                 printf("choisissez les coordonnées (x puis y)");
-                int ch = getchar();
+                while (getchar() != '\n' && getchar() != EOF) {
+                    int ch = getchar();
+                }
                 res = scanf_s(" %d %d", &x, &y);
             }
 
@@ -132,7 +140,8 @@ int main()
             displayBoard(table);
 
         }
-    }      
+    }   
+    return 0;
 }
 
 void displayBoard(Board oBoard) {
@@ -187,33 +196,59 @@ Board init(int size, int iMinesAmount) {
 
     }
 
-     int r = time(NULL);
-     int i = 0;
-     while (table.iMinesAmount > 0) {
-         i++;
-         int x = abs(r % size);
-         r *= time(NULL) % 9; r += 1;
-         int y = abs(r % size);
-         r *= time(NULL) % 9;
-         if (table.grid[x + y * table.size].content == 0) {
-             table.grid[x + y * table.size].content = 9;
-             system("CLS");
-             table.iMinesAmount -= 1;
-         }
-         printf("Nombre d'itérations : %d\n", i);
-     }
-     
+     //int r = time(NULL);
+     //int i = 0;
+     //while (iMinesAmount > 0) {
+     //    i++;
+     //    int x = abs(r % size);
+     //    r *= time(NULL) % 9; r += 1;
+     //    int y = abs(r % size);
+     //    r *= time(NULL) % 9;
+     //    if (table.grid[x + y * table.size].content == 0) {
+     //        table.grid[x + y * table.size].content = 9;
+     //        iMinesAmount -= 1;
+     //    }
+     //}
+     generateMines(&table);
      displayBoard(table);
     return table;
 }
 
 void generateMines(Board* oBoard) {
-    int* freeCases = (int*)malloc(sizeof(int) * oBoard->size * oBoard->size * 2);
-
-    for (int i = 0; i < oBoard->iMinesAmount; i++) {
-        int a;
+    int iFreeCasesLength = oBoard->size * oBoard->size * 2;
+    int* freeCases = (int*)malloc(sizeof(int) * iFreeCasesLength);
+    
+    for (int i = 0; i < oBoard->size; i++) {
+        for (int j = 0; j < oBoard->size; j++) {
+            freeCases[i * oBoard->size * 2 + j * 2] = i;
+            freeCases[i * oBoard->size * 2 + j * 2 + 1] = j;
+        }
     }
 
+    int r = time(NULL);
+
+    for (int i = 0; i < oBoard->iMinesAmount; i++) {
+        int tmpLastFreeCase[2] = { freeCases[iFreeCasesLength - 2], freeCases[iFreeCasesLength - 1] };
+        int* variable = (int*)realloc(freeCases, sizeof(int) * iFreeCasesLength - 2);
+        if (variable != NULL) {
+            freeCases = variable;
+            iFreeCasesLength -= 2;
+            int randomIndex = r % iFreeCasesLength;
+            oddToEvenByLower(&randomIndex);
+            if (randomIndex != iFreeCasesLength - 1) {
+                oBoard->grid[freeCases[randomIndex] + freeCases[randomIndex + 1] * oBoard->size].content = 9;
+                freeCases[randomIndex] = tmpLastFreeCase[0];
+                freeCases[randomIndex + 1] = tmpLastFreeCase[1];
+            }
+        }
+    }
+    free(freeCases);
+}
+
+void oddToEvenByLower(int* number) {
+    if (*number % 2 == 1) {
+        (*number)--;
+    }
 }
 
 void reveal(Board* table, int x, int y) {
