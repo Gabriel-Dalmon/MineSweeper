@@ -29,7 +29,7 @@ void reveal(Board* table, int x, int y);
 void check(Board* table, int x, int y);
 void setFlag(Board* table, int x, int y);
 void generateMines(Board* oBoard);
-void OddToEvenByLower(int* number);
+void oddToEvenByLower(int* number);
 void checkWin(Board* table, int x, int y, int* playing);
 
 
@@ -38,6 +38,10 @@ int main()
     int size;
     printf("Entrez une taille de grille : ");
     int res = scanf_s("%d", &size);
+
+    int iMinesAmount;
+    printf("Enter the amount of mines present on the grid : ");
+    scanf_s("%d", &iMinesAmount);
 
     int difficultie = 0;
     while (difficultie != 1 && difficultie !=2 && difficultie != 3)
@@ -54,7 +58,7 @@ int main()
         res = scanf_s(" %c", &zqsd, 1);
     }
 
-    Board table = init(size, 30); //round(size/difficultie));
+    Board table = init(size, iMinesAmount); //round(size/difficultie));
 
     int isPlaying = 1;
 
@@ -137,7 +141,8 @@ int main()
 
             system("CLS");
         }
-    }      
+    }   
+    return 0;
 }
 
 void displayBoard(Board oBoard) {
@@ -192,19 +197,19 @@ Board init(int size, int iMinesAmount) {
 
     }
 
-     int r = time(NULL);
-     int i = 0;
-     while (iMinesAmount > 0) {
-         i++;
-         int x = abs(r % size);
-         r *= time(NULL) % 9; r += 1;
-         int y = abs(r % size);
-         r *= time(NULL) % 9;
-         if (table.grid[x + y * table.size].content == 0) {
-             table.grid[x + y * table.size].content = 9;
-             iMinesAmount -= 1;
-         }
-     }
+     //int r = time(NULL);
+     //int i = 0;
+     //while (iMinesAmount > 0) {
+     //    i++;
+     //    int x = abs(r % size);
+     //    r *= time(NULL) % 9; r += 1;
+     //    int y = abs(r % size);
+     //    r *= time(NULL) % 9;
+     //    if (table.grid[x + y * table.size].content == 0) {
+     //        table.grid[x + y * table.size].content = 9;
+     //        iMinesAmount -= 1;
+     //    }
+     //}
      generateMines(&table);
      displayBoard(table);
     return table;
@@ -216,43 +221,58 @@ void generateMines(Board* oBoard) {
     
     for (int i = 0; i < oBoard->size; i++) {
         for (int j = 0; j < oBoard->size; j++) {
-            freeCases[i * 2 + j * 2] = i;
-            freeCases[i * 2 + j * 2 + 1] = j;
-            printf("(%d|", freeCases[i * 2 + j * 2]);
-            printf("%d)\n", freeCases[i * 2 + j * 2 + 1]);
+            freeCases[i * oBoard->size * 2 + j * 2] = i;
+            freeCases[i * oBoard->size * 2 + j * 2 + 1] = j;
+            printf("(%d|", freeCases[i * oBoard->size * 2 + j * 2]);
+            printf("%d)\n", freeCases[i * oBoard->size * 2 + j * 2 + 1]);
         }
     }
 
-    int* variable = (int*)realloc(freeCases, sizeof(int) * iFreeCasesLength - 2);
-    if (variable != NULL) {
-        freeCases = variable;
-        iFreeCasesLength -= 2;
+    int r = time(NULL);
+
+    for (int i = 0; i < oBoard->iMinesAmount; i++) {
+        int tmpLastFreeCase[2] = { freeCases[iFreeCasesLength - 2], freeCases[iFreeCasesLength - 1] };
+        int* variable = (int*)realloc(freeCases, sizeof(int) * iFreeCasesLength - 2);
+        if (variable != NULL) {
+            freeCases = variable;
+            iFreeCasesLength -= 2;
+            int randomIndex = r % iFreeCasesLength;
+            oddToEvenByLower(&randomIndex);
+            printf("Realocated to %d\n", randomIndex);
+            if (randomIndex != iFreeCasesLength - 1) {
+                printf("Cases : (%d|%d)\n", freeCases[randomIndex], freeCases[randomIndex + 1]);
+                oBoard->grid[freeCases[randomIndex] + freeCases[randomIndex + 1] * oBoard->size].content = 9;
+                freeCases[randomIndex] = tmpLastFreeCase[0];
+                freeCases[randomIndex + 1] = tmpLastFreeCase[1];
+                printf("Updated cases : (%d|%d)\n", freeCases[randomIndex], freeCases[randomIndex + 1]);
+            }
+            printf("Array size from %d", iFreeCasesLength);
+            
+            printf(" to %d\n", iFreeCasesLength);
+        }
     }
 
-    printf("\n\nRealocated\n\n");
     for (int i = 0; i < oBoard->size; i++) {
         for (int j = 0; j < oBoard->size; j++) {
-            if (i != oBoard->size - 1 || j != oBoard->size - 1) {
-                freeCases[i * 2 + j * 2] = i;
-                freeCases[i * 2 + j * 2 + 1] = j;
-                printf("(%d|", freeCases[i * 2 + j * 2]);
-                printf("%d)\n", freeCases[i * 2 + j * 2 + 1]);
+            if (i * oBoard->size * 2 + j * 2 < iFreeCasesLength-1) {
+                printf("id=%d | (%d|", i * oBoard->size * 2 + j * 2, freeCases[i * oBoard->size * 2 + j * 2]);
+                printf("%d)\n", freeCases[i * oBoard->size * 2 + j * 2 + 1]);
             }
 
         }
     }
 
-    printf("Mines amount : %d", oBoard->iMinesAmount);
+    printf("Mines amount : %d\n", oBoard->iMinesAmount);
     int rand = time(NULL);
     for (int i = 0; i < 1; i++) {
         int randFreeCaseIndex = abs(rand % iFreeCasesLength);
-        OddToEvenByLower(&randFreeCaseIndex);
+        oddToEvenByLower(&randFreeCaseIndex);
         rand = (rand + 1) * 7;
     }
     free(freeCases);
 }
 
-void OddToEvenByLower(int* number) {
+void oddToEvenByLower(int* number) {
     if (*number % 2 == 1) {
         (*number)--;
     }
