@@ -223,8 +223,6 @@ void generateMines(Board* oBoard) {
         for (int j = 0; j < oBoard->size; j++) {
             freeCases[i * oBoard->size * 2 + j * 2] = i;
             freeCases[i * oBoard->size * 2 + j * 2 + 1] = j;
-            printf("(%d|", freeCases[i * oBoard->size * 2 + j * 2]);
-            printf("%d)\n", freeCases[i * oBoard->size * 2 + j * 2 + 1]);
         }
     }
 
@@ -238,36 +236,12 @@ void generateMines(Board* oBoard) {
             iFreeCasesLength -= 2;
             int randomIndex = r % iFreeCasesLength;
             oddToEvenByLower(&randomIndex);
-            printf("Realocated to %d\n", randomIndex);
             if (randomIndex != iFreeCasesLength - 1) {
-                printf("Cases : (%d|%d)\n", freeCases[randomIndex], freeCases[randomIndex + 1]);
                 oBoard->grid[freeCases[randomIndex] + freeCases[randomIndex + 1] * oBoard->size].content = 9;
                 freeCases[randomIndex] = tmpLastFreeCase[0];
                 freeCases[randomIndex + 1] = tmpLastFreeCase[1];
-                printf("Updated cases : (%d|%d)\n", freeCases[randomIndex], freeCases[randomIndex + 1]);
             }
-            printf("Array size from %d", iFreeCasesLength);
-            
-            printf(" to %d\n", iFreeCasesLength);
         }
-    }
-
-    for (int i = 0; i < oBoard->size; i++) {
-        for (int j = 0; j < oBoard->size; j++) {
-            if (i * oBoard->size * 2 + j * 2 < iFreeCasesLength-1) {
-                printf("id=%d | (%d|", i * oBoard->size * 2 + j * 2, freeCases[i * oBoard->size * 2 + j * 2]);
-                printf("%d)\n", freeCases[i * oBoard->size * 2 + j * 2 + 1]);
-            }
-
-        }
-    }
-
-    printf("Mines amount : %d\n", oBoard->iMinesAmount);
-    int rand = time(NULL);
-    for (int i = 0; i < 1; i++) {
-        int randFreeCaseIndex = abs(rand % iFreeCasesLength);
-        oddToEvenByLower(&randFreeCaseIndex);
-        rand = (rand + 1) * 7;
     }
     free(freeCases);
 }
