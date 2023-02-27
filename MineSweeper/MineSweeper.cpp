@@ -128,10 +128,9 @@ int main()
                 setFlag(&table, x, y);
             }
 
-
+            system("CLS");
             displayBoard(table);
 
-            system("CLS");
         }
     }      
 }
@@ -198,6 +197,7 @@ Board init(int size, int iMinesAmount) {
          r *= time(NULL) % 9;
          if (table.grid[x + y * table.size].content == 0) {
              table.grid[x + y * table.size].content = 9;
+             system("CLS");
              table.iMinesAmount -= 1;
          }
          printf("Nombre d'itérations : %d\n", i);
