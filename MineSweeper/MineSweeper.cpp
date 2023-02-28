@@ -6,6 +6,8 @@
 #include <time.h>
 #include <conio.h>
 #include <math.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 typedef struct Case {
     int content;
@@ -31,10 +33,14 @@ void setFlag(Board* table, int x, int y);
 void generateMines(Board* oBoard);
 void oddToEvenByLower(int* number);
 void checkWin(Board* table, int x, int y, int* playing);
+void displayUI(Board* board);
 
 
-int main()
+int main(int argc, char* argv[])
 {
+
+
+
     int size;
     printf("Entrez une taille de grille : ");
     int res = scanf_s("%d", &size);
@@ -59,6 +65,8 @@ int main()
     }
 
     Board table = init(size, iMinesAmount); //round(size/difficultie));
+
+    displayUI(&table);
 
     int isPlaying = 1;
 
@@ -142,6 +150,95 @@ int main()
         }
     }   
     return 0;
+}
+
+
+
+void displayUI(Board* board) {
+    SDL_Window* window;
+    SDL_Renderer* renderer;//Déclaration du renderer
+    TTF_Init();
+
+    // Création de la fenêtre et du randerer:
+    window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
+
+
+    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
+
+
+
+    SDL_Rect tile;
+    SDL_Color fontColor;
+    TTF_Font* vera = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 16);
+    SDL_Surface* message;
+    char content[2];
+    SDL_Texture* indicTile;
+
+
+    for (int i = 0; i < board->size; i++) {
+        for (int j = 0; j < board->size; j++)
+        {
+
+            tile = { j * 20, i * 20 , 20, 20 };//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+
+            if (board->grid[i].isVisible == 0) {
+                SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
+                SDL_RenderFillRect(renderer, &tile);
+            }
+            else if (board->grid[i].isVisible == 1) {
+
+                if (board->grid[i].content == 0) {
+                    fontColor.r = 0;
+                    fontColor.g = 0;
+                    fontColor.b = 0;
+                    fontColor.a = 0;
+                }
+                else if (board->grid[i].content == 1) {
+                    fontColor.r = 66;
+                    fontColor.g = 147;
+                    fontColor.b = 245;
+                    fontColor.a = 255;
+                }
+                else if (board->grid[i].content == 2) {
+                    fontColor.r = 144;
+                    fontColor.g = 66;
+                    fontColor.b = 245;
+                    fontColor.a = 255;
+                }
+                else if (board->grid[i].content >= 3) {
+                    fontColor.r = 201;
+                    fontColor.g = 8;
+                    fontColor.b = 8;
+                    fontColor.a = 255;
+                }
+
+                sprintf_s(content, "%d", board->grid[i].content);
+                SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+                message = TTF_RenderText_Blended(vera, content, fontColor);
+                indicTile = SDL_CreateTextureFromSurface(renderer, message);
+                SDL_RenderCopy(renderer, indicTile, NULL, &tile);
+            }
+        }
+    }
+
+
+    SDL_RenderPresent(renderer);
+
+
+    
+
+
+    SDL_Delay(3000);//pause de 3 secondes
+
+    //on libère tout
+    //SDL_FreeSurface(message);
+    TTF_CloseFont(vera);
+    //SDL_DestroyTexture(indicTile);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    TTF_Quit();
+    SDL_Quit(); 
 }
 
 void displayBoard(Board oBoard) {
