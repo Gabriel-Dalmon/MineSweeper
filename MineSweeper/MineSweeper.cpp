@@ -33,7 +33,7 @@ void setFlag(Board* table, int x, int y);
 void generateMines(Board* oBoard);
 void oddToEvenByLower(int* number);
 void checkWin(Board* table, int x, int y, int* playing);
-void displayUI(Board* board);
+void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer);
 
 
 int main(int argc, char* argv[])
@@ -57,114 +57,61 @@ int main(int argc, char* argv[])
     }
     difficultie = 6 / difficultie;
 
-    char zqsd = 'o';
-    while(zqsd !='y' && zqsd != 'n')
-    {
-        printf("mode zqsd ? (y/n) ");
-        res = scanf_s(" %c", &zqsd, 1);
-    }
 
     Board table = init(size, iMinesAmount); //round(size/difficultie));
 
-    displayUI(&table);
+
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    TTF_Init();
+    int x;
+    int y;
+
+    window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
+    
+
 
     int isPlaying = 1;
 
-    system("CLS");
-
-    if(zqsd=='y')//
-    {
-        int position[2];
-        position[0] = 0;
-        position[1] = 0;
-        table.grid[0].current = 1;
-        displayBoard(table);
 
         while (isPlaying == 1)
         {
 
+            SDL_Event event;
+            while (SDL_PollEvent(&event)) {  // poll until all events are handled!
+                switch (event.type)
+                {
+                case SDL_MOUSEBUTTONDOWN:
+                    
+                    x = floor(event.button.x / 20);
+                    y = floor(event.button.y / 20);
 
-            system("CLS");
-            displayBoard(table);
-
-            char move = _getch();
-
-            table.grid[position[0] + size * position[1]].current = 0;
-
-            if (move == 'z') { if (position[1] > 0) {position[1] --; } }
-            else if (move == 'q') { if (position[0]%size > 0) { position[0] --; } }
-            else if (move == 's') { if (position[1] < size - 1){ position[1] ++; } }
-            else if (move == 'd') { if (position[0] % size < size - 1) { position[0] ++; } }
-            else if (move == '2') { setFlag(&table, position[0], position[1]); }
-            else if (move == '1') {
-                reveal(&table, position[0], position[1]);
-                checkWin(&table, position[0], position[1], &isPlaying);
-            }
-
-            
-
-            table.grid[position[0] + size * position[1]].current = 1;
-
-        }
-    }
-    else
-    {
-        while (isPlaying == 1)
-        {
-            char flag = 'o';
-
-            while (flag != 'y' && flag != 'n') {
-                printf("flag ? (y / n)");
-                res = scanf_s(" %c", &flag, 1);
-            }
-
-
-
-            int x = -1;
-            int y = -1;
-            res = 0;
-
-            while (res != 2 || 0 > x || x >= size || 0 > y || y >= size) {
-                printf("choisissez les coordonnées (x puis y)");
-                while (getchar() != '\n' && getchar() != EOF) {
-                    int ch = getchar();
+                    if (event.button.button == 1) {
+                        reveal(&table, x, y);
+                        checkWin(&table, x, y, &isPlaying);
+                    }
+                    else if (event.button.button == 3) {
+                        setFlag(&table, x, y);
+                    }
+                    break;
                 }
-                res = scanf_s(" %d %d", &x, &y);
             }
 
+            displayUI(&table, window, renderer);
 
-
-            if (flag == 'n')
-            {
-                reveal(&table, x, y);
-                checkWin(&table, x, y, &isPlaying);
-            }
-            else
-            {
-                setFlag(&table, x, y);
-            }
-
-            system("CLS");
-            displayBoard(table);
 
         }
-    }   
+
     return 0;
 }
 
 
 
-void displayUI(Board* board) {
-    SDL_Window* window;
-    SDL_Renderer* renderer;//Déclaration du renderer
-    TTF_Init();
-
-    // Création de la fenêtre et du randerer:
-    window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
+void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer) {
+    
 
 
-    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
 
 
 
@@ -182,39 +129,61 @@ void displayUI(Board* board) {
 
             tile = { j * 20, i * 20 , 20, 20 };//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
 
-            if (board->grid[i].isVisible == 0) {
-                SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
-                SDL_RenderFillRect(renderer, &tile);
-            }
-            else if (board->grid[i].isVisible == 1) {
+            if (board->grid[i * 15 + j].flag == 1) {
 
-                if (board->grid[i].content == 0) {
-                    fontColor.r = 0;
-                    fontColor.g = 0;
-                    fontColor.b = 0;
-                    fontColor.a = 0;
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderFillRect(renderer, &tile);
+
+            }
+            else if (board->grid[i * 15 + j].isVisible == 0) {
+
+
+                if ((i * 15 + j) % 2 == 0) {
+                    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
                 }
-                else if (board->grid[i].content == 1) {
+                else{ SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
+                
+
+                SDL_RenderFillRect(renderer, &tile);
+
+
+            }
+            else if (board->grid[i * 15 + j].isVisible == 1) {
+
+
+                if ((i * 15 + j) % 2 == 0) {
+                    SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
+                }
+                else {
+                    SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+                }
+                
+
+                if (board->grid[i * 15 + j].content == 0) {
+                    SDL_GetRenderDrawColor(renderer, &fontColor.r, &fontColor.g, &fontColor.b, &fontColor.a);
+                }
+                else if (board->grid[i * 15 + j].content == 1) {
                     fontColor.r = 66;
                     fontColor.g = 147;
                     fontColor.b = 245;
                     fontColor.a = 255;
                 }
-                else if (board->grid[i].content == 2) {
+                else if (board->grid[i * 15 + j].content == 2) {
                     fontColor.r = 144;
                     fontColor.g = 66;
                     fontColor.b = 245;
                     fontColor.a = 255;
                 }
-                else if (board->grid[i].content >= 3) {
+                else if (board->grid[i * 15 + j].content >= 3) {
                     fontColor.r = 201;
                     fontColor.g = 8;
                     fontColor.b = 8;
                     fontColor.a = 255;
                 }
+                
 
-                sprintf_s(content, "%d", board->grid[i].content);
-                SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+                sprintf_s(content, "%d", board->grid[i * 15 + j].content);
+                SDL_RenderFillRect(renderer, &tile);
                 message = TTF_RenderText_Blended(vera, content, fontColor);
                 indicTile = SDL_CreateTextureFromSurface(renderer, message);
                 SDL_RenderCopy(renderer, indicTile, NULL, &tile);
@@ -228,17 +197,17 @@ void displayUI(Board* board) {
 
     
 
+    //SDL_WaitEvent(event);
+    //SDL_Delay(1000);//pause de 3 secondes
 
-    SDL_Delay(3000);//pause de 3 secondes
-
-    //on libère tout
-    //SDL_FreeSurface(message);
-    TTF_CloseFont(vera);
-    //SDL_DestroyTexture(indicTile);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    TTF_Quit();
-    SDL_Quit(); 
+    ////on libère tout
+    ////SDL_FreeSurface(message);
+    //TTF_CloseFont(vera);
+    ////SDL_DestroyTexture(indicTile);
+    //SDL_DestroyRenderer(renderer);
+    //SDL_DestroyWindow(window);
+    //TTF_Quit();
+    //SDL_Quit(); 
 }
 
 void displayBoard(Board oBoard) {
@@ -388,6 +357,7 @@ void check(Board* table, int x, int y) {
 
 
 void setFlag (Board* table, int x, int y) {
+    printf("OK OK");
     if (table->grid[(x + y * table->size)].flag == 1) {
         table->grid[(x + y * table->size)].flag = 0;
     }
