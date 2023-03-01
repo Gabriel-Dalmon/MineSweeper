@@ -61,7 +61,7 @@ int main()
     //}
 
     Board oBoard;
-    construct(&oBoard, iGridLength, round(iGridLength / iDifficulty));
+    construct(&oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty));
     
 
     char cZQSDControl;
@@ -136,7 +136,7 @@ int main()
 void displayBoard(Board oBoard) {
     for (int i = 0; i < oBoard.iGridLength; i++) {
         for (int j = 0; j < oBoard.iGridLength; j++) {
-            if(i == oBoard.iCursorPosition[0] && j == oBoard.iCursorPosition[1])
+            if(j == oBoard.iCursorPosition[0] && i == oBoard.iCursorPosition[1])
             {
                 if (oBoard.grid[i * oBoard.iGridLength + j].isFlag == 1) {
                     printf("\x1b[46mF\033[0;37m ");
@@ -165,10 +165,11 @@ void displayBoard(Board oBoard) {
         }
         printf("\n");
     }
+    printf("%d|%d\n", oBoard.iCursorPosition[0], oBoard.iCursorPosition[1]);
 }
 
 void setCursorSinleAxis(Board* oBoard, int dest, int axis) {
-    if (axis == 1) {
+    if (axis == 0) {
         if (dest >= 0 && dest <= oBoard->iGridLength) {
             oBoard->iCursorPosition[axis] = dest;
         }
@@ -185,13 +186,13 @@ int ZQSDActionSelector(Board* oBoard) {
         cKeyPress = _getch();
 
         if (cKeyPress == 'z') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1]--, 1);
+            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1] - 1, 1);
         } else if (cKeyPress == 'q') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0]--,0);
+            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0] - 1,0);
         } else if (cKeyPress == 's') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1]++, 1);
+            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1] + 1, 1);
         } else if (cKeyPress == 'd') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0]++, 0);
+            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0] + 1, 0);
         } else if (cKeyPress == '1') {
             return 1;
         } else if (cKeyPress == '2') {
@@ -205,11 +206,14 @@ void construct(Board* oBoard, int iGridLength, int iMinesAmount) {
     oBoard->grid = (Case*)malloc(sizeof(Case) * oBoard->iGridLength * oBoard->iGridLength);
     oBoard->iMinesAmount = iMinesAmount;
     oBoard->remaining = oBoard->iGridLength * oBoard->iGridLength - oBoard->iMinesAmount;
+    oBoard->iCursorPosition[0] = 0;
+    oBoard->iCursorPosition[1] = 0;
 
     for (int j = 0; j < oBoard->iGridLength * oBoard->iGridLength; j++) {
         //oBoard->grid[j] = { 0, 0, 0 };
         oBoard->grid[j].iContent = 0;
-        oBoard->grid[j].iContent = 0;
+        oBoard->grid[j].isVisible = 0;
+        oBoard->grid[j].isFlag = 0;
     };
 
     generateMines(oBoard);
