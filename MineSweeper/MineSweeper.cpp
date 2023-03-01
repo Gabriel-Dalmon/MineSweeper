@@ -6,6 +6,8 @@
 #include <time.h>
 #include <conio.h>
 #include <math.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 typedef struct Case {
     int iContent; // 9 = mines, 0-8 = amount of adjacent mines
@@ -25,6 +27,7 @@ typedef struct Board {
 void construct(Board* oBoard, int iGridLength, int minesAmount);
 void generateMines(Board* oBoard);
 
+Case* getCaseByXY(Board* oBoard, int x, int y);
 void setFlag(Board* oBoard, int x, int y);
 
 void reveal(Board* oBoard, int x, int y);
@@ -36,7 +39,8 @@ void displayBoard(Board oBoard);
 
 
 void oddToEvenByLower(int* number);
-void getIntInput(int* dest);
+void getInput(int* dest);
+void getInput(char* dest);
 void getCharInput(char* dest);
 void clearSTDIN();
 
@@ -46,35 +50,32 @@ int ZQSDActionSelector(Board* oBoard);
 void tmpFuncGetData(int* iGridLength, int* iDifficulty);
 void tmpFuncGetControlMode(char* cZQSDControl);
 
-int main()
+
+int main(int argc, char* argv[])
 {
     int isPlaying = 1;
-    int iGridLength, iDifficulty;
-
-    tmpFuncGetData(&iGridLength, &iDifficulty);
-    //int iMinesAmount = 0;
-    //printf("Enter the amount of mines present on the grid : ");
-    //getIntInput(&iMinesAmount);
-    //while (iMinesAmount >= iGridLength * iGridLength && iMinesAmount >= 1) {
-    //    printf("The mines amount has to be smaller than the amount of cases : ");
-    //    getIntInput(&iMinesAmount);
-    //}
+    int iGridLength, iDifficulty; //,iMinesAmount;
+    tmpFuncGetData(&iGridLength, &iDifficulty);//,&iMinesAmount);
 
     Board oBoard;
     construct(&oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty));
     
-
-    char cZQSDControl;
+    //char cZQSDControl;
     //tmpFuncGetControlMode(&cZQSDControl);
     
     int (*pfnGetAction)(Board*);
     pfnGetAction = ZQSDActionSelector;
 
     int actionType;
+
+    if (SDL_Init(SDL_INIT_VIDEO < 0)) {
+        exit(1);
+    }
     while (isPlaying == 1) {
-        system("CLS");
-        displayBoard(oBoard);
+        //EVENTS
         actionType = pfnGetAction(&oBoard);
+
+        //UPDATE
         if (actionType == 1) { /* iType = 1 : The player reveals a new case */
             reveal(&oBoard, oBoard.iCursorPosition[0], oBoard.iCursorPosition[1]);
             isWinning(&oBoard, oBoard.iCursorPosition[0], oBoard.iCursorPosition[1]);
@@ -82,6 +83,10 @@ int main()
         else if (actionType == 2) { /* iType = 2 : The player sets a flag */
             setFlag(&oBoard, oBoard.iCursorPosition[0], oBoard.iCursorPosition[1]);
         }
+
+        //DISPLAY
+        system("CLS");
+        displayBoard(oBoard);
     }
 
     /*if(false)
@@ -165,17 +170,17 @@ void displayBoard(Board oBoard) {
         }
         printf("\n");
     }
-    printf("%d|%d\n", oBoard.iCursorPosition[0], oBoard.iCursorPosition[1]);
+    printf("%d|%d\n", oBoard.iCursorPosition[0]%oBoard.iGridLength, oBoard.iCursorPosition[1]);
 }
 
 void setCursorSinleAxis(Board* oBoard, int dest, int axis) {
-    if (axis == 0) {
-        if (dest >= 0 && dest <= oBoard->iGridLength) {
-            oBoard->iCursorPosition[axis] = dest;
-        }
-    } else if (dest % oBoard->iGridLength >= 0 && dest % oBoard->iGridLength <= oBoard->iGridLength) {
+    if (dest >= 0 && dest < oBoard->iGridLength) {
         oBoard->iCursorPosition[axis] = dest;
     }
+}
+
+int isCoordInGrid(int* iGridLength, int x, int y) {
+    return x >= 0 && x < *iGridLength && y >= 0 && y < *iGridLength;
 }
 
 int ZQSDActionSelector(Board* oBoard) {
@@ -268,18 +273,37 @@ void generateMines(Board* oBoard) {
 }
 
 
+void setMine(Board* oBoard, int x, int y) { 
+    //sets a mine and increments the amount of adjacent mines on adjacent cases
+    if (isCoordInGrid(&oBoard->iGridLength, x, y) && getCaseByXY(oBoard, x, y)->iContent != 9) {
+        getCaseByXY(oBoard, x, y)->iContent = 9;
+        incrementAdjMinesAmount(oBoard, x, y);
+    }
+}
+
+void incrementAdjMinesAmount(Board* oBoard, int x, int y) {
+    for (int i = y-1; i < y + 1; i++) {
+        for (int j = x-1; j < x + 1; j++) {
+            if (getCaseByXY(oBoard, x, y)->iContent != 9) {
+                getCaseByXY(oBoard, x, y)->iContent++;
+                getCaseByXY(oBoard, x, y)->isVisible = 1;
+            }
+        }
+    }
+
+}
 
 void reveal(Board* oBoard, int x, int y) {
-    if (oBoard->grid[x + y * oBoard->iGridLength].iContent != 9 && oBoard->grid[x + y * oBoard->iGridLength].isVisible == 0) {
-        oBoard->grid[x + y * oBoard->iGridLength].isVisible = 1;
+    if (getCaseByXY(oBoard,x,y)->iContent != 9 && getCaseByXY(oBoard, x, y)->isVisible == 0) {
+        getCaseByXY(oBoard, x, y)->isVisible = 1;
         oBoard->remaining -= 1;
         check(oBoard, x, y);
-        if (oBoard->grid[x + y * oBoard->iGridLength].iContent == 0) {
+        if (getCaseByXY(oBoard, x, y)->iContent == 0) {
             for (int i = -1; i < 2; i++) {  
                 if(x+i >=0 && x+i < oBoard->iGridLength){
                     for (int j = -1; j < 2; j++) {
                         if(y+j >=0 && y+j < oBoard->iGridLength){
-                            if(oBoard->grid[(x+i) + (y+j) * oBoard->iGridLength].isVisible != 1){
+                            if(getCaseByXY(oBoard, x, y)->isVisible != 1){
                                 reveal(oBoard, x + i, y + j);
                             }
                         }
@@ -291,14 +315,14 @@ void reveal(Board* oBoard, int x, int y) {
 }
 
 void check(Board* oBoard, int x, int y) {
-    if (oBoard->grid[x + y * oBoard->iGridLength].iContent != 9)
+    if ( && (*getCaseByXY(oBoard, x, y)).iContent != 9)
     {
         for (int i = -1; i < 2; i++) {
             if (x + i >= 0 && x + i < oBoard->iGridLength) {
                 for (int j = -1; j < 2; j++) {
                     if (y + j >= 0 && y + j < oBoard->iGridLength) {
-                        if (oBoard->grid[(x + i) + (y + j) * oBoard->iGridLength].iContent == 9) {
-                            oBoard->grid[x + y * oBoard->iGridLength].iContent += 1;
+                        if ((*getCaseByXY(oBoard, x, y)).iContent == 9) {
+                            (*getCaseByXY(oBoard, x, y)).iContent += 1;
                         }
                     }
                 }
@@ -331,7 +355,7 @@ int isWinning(Board* oBoard, int x, int y) {
 }
 
 
-void getIntInput(int* dest) {
+void getInput(int* dest) {
     int res = scanf_s("%d", dest);
     while (res != 1) {
         clearSTDIN();
@@ -340,13 +364,17 @@ void getIntInput(int* dest) {
     }
 }
 
-void getCharInput(char* dest) {
+void getInput(char* dest) {
     int res = scanf_s("%c", dest);
     while (res != 1) {
         clearSTDIN();
         printf("The input has to be a character: ");
         res = scanf_s("%c", dest);
     }
+}
+
+Case* getCaseByXY(Board* oBoard, int x, int y) {
+    return &oBoard->grid[x + y * oBoard->iGridLength];
 }
 
 void clearSTDIN() {
@@ -361,28 +389,35 @@ void oddToEvenByLower(int* number) {
 
 void tmpFuncGetData(int* iGridLength, int* iDifficulty) {
     printf("Enter the length of the grid: ");
-    getIntInput(iGridLength);
+    getInput(iGridLength);
     while (*iGridLength < 2) {
         printf("The length of the grid has to be longer than 2: ");
-        getIntInput(iGridLength);
+        getInput(iGridLength);
     }
 
     printf("1 = Easy, 2 = Normal, 3 = Hard\nChoose a difficulty: ");
-    getIntInput(iDifficulty);
+    getInput(iDifficulty);
     while (*iDifficulty != 1 && *iDifficulty != 2 && *iDifficulty != 3)
     {
         printf("1 = Easy, 2 = Normal, 3 = Hard\nPlease enter an integer between 1/2/3: ");
-        getIntInput(iDifficulty);
+        getInput(iDifficulty);
     }
     *iDifficulty = 6 / *iDifficulty;
+
+    //printf("Enter the amount of mines present on the grid : ");
+    //getInput(&iMinesAmount);
+    //while (iMinesAmount >= iGridLength * iGridLength && iMinesAmount >= 1) {
+    //    printf("The mines amount has to be smaller than the amount of cases : ");
+    //    getInput(&iMinesAmount);
+    //}
 }
 
 void tmpFuncGetControlMode(char* cZQSDControl) {
     printf("Do you want to play with Z/Q/S/D controls ? (y/n) ");
-    getCharInput(cZQSDControl);
+    getInput(cZQSDControl);
     while (*cZQSDControl != 'y' && *cZQSDControl != 'n')
     {
         printf("Please enter \"y\" for Yes or \"n\" for No");
-        getCharInput(cZQSDControl);
+        getInput(cZQSDControl);
     }
 }
