@@ -29,6 +29,8 @@ void generateMines(Board* oBoard);
 
 Case* getCaseByXY(Board* oBoard, int x, int y);
 void setFlag(Board* oBoard, int x, int y);
+void incrementAdjMinesAmount(Board* oBoard, int x, int y);
+void setMine(Board* oBoard, int x, int y);
 
 void reveal(Board* oBoard, int x, int y);
 void check(Board* oBoard, int x, int y);
@@ -217,7 +219,7 @@ void construct(Board* oBoard, int iGridLength, int iMinesAmount) {
     for (int j = 0; j < oBoard->iGridLength * oBoard->iGridLength; j++) {
         //oBoard->grid[j] = { 0, 0, 0 };
         oBoard->grid[j].iContent = 0;
-        oBoard->grid[j].isVisible = 0;
+        oBoard->grid[j].isVisible = 1;
         oBoard->grid[j].isFlag = 0;
     };
 
@@ -246,8 +248,10 @@ void generateMines(Board* oBoard) {
             int randomIndex = r % iFreeCasesLength;
             oddToEvenByLower(&randomIndex);
             if (randomIndex != iFreeCasesLength - 1) {
-                oBoard->grid[freeCases[randomIndex] + freeCases[randomIndex + 1] * oBoard->iGridLength].iContent = 9;
-                oBoard->grid[freeCases[randomIndex] + freeCases[randomIndex + 1] * oBoard->iGridLength].isVisible = 1;
+                setMine(oBoard, freeCases[randomIndex], freeCases[randomIndex + 1]);
+
+                /*oBoard->grid[freeCases[randomIndex] + freeCases[randomIndex + 1] * oBoard->iGridLength].iContent = 9;
+                oBoard->grid[freeCases[randomIndex] + freeCases[randomIndex + 1] * oBoard->iGridLength].isVisible = 1;*/
                 freeCases[randomIndex] = tmpLastFreeCase[0];
                 freeCases[randomIndex + 1] = tmpLastFreeCase[1];
             }
@@ -284,13 +288,13 @@ void setMine(Board* oBoard, int x, int y) {
 void incrementAdjMinesAmount(Board* oBoard, int x, int y) {
     for (int i = y-1; i < y + 1; i++) {
         for (int j = x-1; j < x + 1; j++) {
-            if (getCaseByXY(oBoard, x, y)->iContent != 9) {
-                getCaseByXY(oBoard, x, y)->iContent++;
-                getCaseByXY(oBoard, x, y)->isVisible = 1;
+            if (isCoordInGrid(&oBoard->iGridLength, i, j) && getCaseByXY(oBoard, i, j)->iContent != 9) {
+                getCaseByXY(oBoard, i, j)->iContent++;
+                getCaseByXY(oBoard, i, j)->isVisible = 1;
+                printf("X/Y = (%d|%d) | I/J = (%d|%d)", );
             }
         }
     }
-
 }
 
 void reveal(Board* oBoard, int x, int y) {
@@ -315,7 +319,7 @@ void reveal(Board* oBoard, int x, int y) {
 }
 
 void check(Board* oBoard, int x, int y) {
-    if ( && (*getCaseByXY(oBoard, x, y)).iContent != 9)
+    if ((*getCaseByXY(oBoard, x, y)).iContent != 9)
     {
         for (int i = -1; i < 2; i++) {
             if (x + i >= 0 && x + i < oBoard->iGridLength) {
@@ -373,6 +377,7 @@ void getInput(char* dest) {
     }
 }
 
+
 Case* getCaseByXY(Board* oBoard, int x, int y) {
     return &oBoard->grid[x + y * oBoard->iGridLength];
 }
@@ -421,3 +426,65 @@ void tmpFuncGetControlMode(char* cZQSDControl) {
         getInput(cZQSDControl);
     }
 }
+
+
+
+//init la fenêtre = fonction pointer pour afficher le contenu de la fenêtre, gestion des évènements
+//while
+//ptnFunctionEventController(fenêtre,event.type)
+// update fenêtre
+//animationsHandler()
+//displayContent(fenêtre)
+
+//struct Board
+//struct Menu
+//struct Button {function pointer}
+
+//fenêtre(type=Menu) Menu menu
+//fenêtre(type=Game) Board board
+// 
+//  #define WINDOWS_HEAD
+//          type
+//          eventController
+//          animationsHandler
+// 
+// struct Window
+// type
+// eventController
+// content = &Menu
+// 
+// void (*reveal)(x,y)
+// 
+// for
+// for 
+// Case.contnet = 9
+// Case.reveal = revealMine
+// 
+// Menu menu;
+// 
+// Mado mado;
+// mado.type = GAME;
+// mado.content = Board board
+// mado.display = displayMenu
+// 
+// 
+// *mado.display(mado)
+// 
+// displayMenu(mado){
+// mado.content displayed this way
+// }
+// 
+// // displayGame(mado){
+// mado.content displayed differently
+// }
+// 
+// 
+// struct MADO_HEAD {
+//  int a;
+//  Case* grid;
+//  void (*function)(void* this);
+// }
+// 
+// MADO.HEAD.function(MADOHEAD)
+// 
+//pas de ptnFunction mais surcharge de la fonction display
