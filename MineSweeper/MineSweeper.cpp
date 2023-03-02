@@ -8,6 +8,18 @@
 #include <math.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
+
+
+#define MADO_HEAD                           \
+            SDL_Window* window ;            \
+            SDL_Renderer* renderer;         \
+            void(*display)(void* render);   \
+            void(*control)(void* render);   \
+
+            
+
+
 
 typedef struct Case {
     int content;
@@ -25,8 +37,24 @@ typedef struct Board {
     int iMinesAmount;
 } Board;
 
+
+//typedef struct Menu{
+
+//}Menu;
+
+
+typedef struct GameMado {
+    MADO_HEAD
+    Board* board;
+} GMado;
+
+typedef struct MenuMado {
+    MADO_HEAD
+} MMado;
+
+
+
 Board init(int size, int mines);
-void displayBoard(Board oBoard);
 void reveal(Board* table, int x, int y);
 void check(Board* table, int x, int y);
 void setFlag(Board* table, int x, int y);
@@ -34,6 +62,8 @@ void generateMines(Board* oBoard);
 void oddToEvenByLower(int* number);
 void checkWin(Board* table, int x, int y, int* playing);
 void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer);
+void displayMenu(MMado* menu);
+void gameControl(SDL_Event* event, Board* table, int* isPlaying);
 
 
 int main(int argc, char* argv[])
@@ -49,13 +79,6 @@ int main(int argc, char* argv[])
     printf("Enter the amount of mines present on the grid : ");
     scanf_s("%d", &iMinesAmount);
 
-    int difficultie = 0;
-    while (difficultie != 1 && difficultie !=2 && difficultie != 3)
-    {
-        printf("difficulté ? (1/2/3)");
-        res = scanf_s("%d", &difficultie);
-    }
-    difficultie = 6 / difficultie;
 
 
     Board table = init(size, iMinesAmount); //round(size/difficultie));
@@ -63,45 +86,43 @@ int main(int argc, char* argv[])
 
     SDL_Window* window;
     SDL_Renderer* renderer;
+    MMado mainMenu;
+    GMado game;
     TTF_Init();
-    int x;
-    int y;
 
     window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
     
 
+    int running = 1;
+    int isPlaying = 0;
 
-    int isPlaying = 1;
+
+
+    while (running == 1) {
+
+
+        displayMenu(&mainMenu);
+
 
 
         while (isPlaying == 1)
         {
 
             SDL_Event event;
-            while (SDL_PollEvent(&event)) {  // poll until all events are handled!
-                switch (event.type)
-                {
-                case SDL_MOUSEBUTTONDOWN:
-                    
-                    x = floor(event.button.x / 20);
-                    y = floor(event.button.y / 20);
-
-                    if (event.button.button == 1) {
-                        reveal(&table, x, y);
-                        checkWin(&table, x, y, &isPlaying);
-                    }
-                    else if (event.button.button == 3) {
-                        setFlag(&table, x, y);
-                    }
-                    break;
-                }
+            while (SDL_PollEvent(&event)) {
+                int* tempArray = (int*)malloc(sizeof(void*) * 3);
+                tempArray = (&event, &table, &isPlaying);
+                game.control(tempArray);
+                free(tempArray);
             }
 
             displayUI(&table, window, renderer);
 
 
         }
+        
+    }
 
     return 0;
 }
@@ -121,6 +142,11 @@ void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer) {
     SDL_Surface* message;
     char content[2];
     SDL_Texture* indicTile;
+    SDL_Surface* flagImg = IMG_Load("img/good_flag.png");
+    SDL_Texture* flagTexture = SDL_CreateTextureFromSurface(renderer, flagImg);
+
+
+
 
 
     for (int i = 0; i < board->size; i++) {
@@ -131,8 +157,14 @@ void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer) {
 
             if (board->grid[i * 15 + j].flag == 1) {
 
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                if ((i * 15 + j) % 2 == 0) {
+                    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
+                }
+                else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
+
                 SDL_RenderFillRect(renderer, &tile);
+                SDL_RenderCopy(renderer, flagTexture, NULL, &tile);
+                
 
             }
             else if (board->grid[i * 15 + j].isVisible == 0) {
@@ -163,22 +195,13 @@ void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer) {
                     SDL_GetRenderDrawColor(renderer, &fontColor.r, &fontColor.g, &fontColor.b, &fontColor.a);
                 }
                 else if (board->grid[i * 15 + j].content == 1) {
-                    fontColor.r = 66;
-                    fontColor.g = 147;
-                    fontColor.b = 245;
-                    fontColor.a = 255;
+                    fontColor = { 66,147, 245, 255 };
                 }
                 else if (board->grid[i * 15 + j].content == 2) {
-                    fontColor.r = 144;
-                    fontColor.g = 66;
-                    fontColor.b = 245;
-                    fontColor.a = 255;
+                    fontColor = {144, 66, 245, 255};
                 }
                 else if (board->grid[i * 15 + j].content >= 3) {
-                    fontColor.r = 201;
-                    fontColor.g = 8;
-                    fontColor.b = 8;
-                    fontColor.a = 255;
+                    fontColor = { 201, 8, 8, 255 };
                 }
                 
 
@@ -210,37 +233,33 @@ void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer) {
     //SDL_Quit(); 
 }
 
-void displayBoard(Board oBoard) {
-    for (int i = 0; i < oBoard.size; i++) {
-        for (int j = 0; j < oBoard.size; j++) {
-            if(oBoard.grid[i * oBoard.size + j].current == 1)
-            {
-                if (oBoard.grid[i * oBoard.size + j].flag == 1) {
-                    printf("\x1b[46mF\033[0;37m ");
-                }
-                else if (oBoard.grid[i * oBoard.size + j].isVisible == 0) {
-                    printf("\x1b[46mX\033[0;37m ");
-                }
-                else {
-                    printf("\x1b[46m%d\033[0;37m ", oBoard.grid[i * oBoard.size + j].content);
-                }
-            }
-            else {
-                if (oBoard.grid[i * oBoard.size + j].flag == 1) {
-                    printf("\033[0;32mF\033[0;37m ");
-                }
-                else if (oBoard.grid[i * oBoard.size + j].isVisible == 0) {
-                    printf("\033[0; 32mX\033[0;37m ");
-                }
-                else if (oBoard.grid[i * oBoard.size + j].content == 0){ // on sait que la case est visible
-                    printf("  ");
-                }
-                else {
-                    printf("\033[0;31m%d\033[0;37m ", oBoard.grid[i * oBoard.size + j].content);
-                }
-            }
+
+void displayMenu(MMado* menu) {
+
+}
+
+
+
+
+
+void gameControl(void* render) {
+    render = 2;
+    SDL_Event* event, Board* table, int* isPlaying
+    switch (event->type)
+    {
+    case SDL_MOUSEBUTTONDOWN:
+
+        int x = floor(event->button.x / 20);
+        int y = floor(event->button.y / 20);
+
+        if (event->button.button == 1) {
+            reveal(table, x, y);
+            checkWin(table, x, y, isPlaying);
         }
-        printf("\n");
+        else if (event->button.button == 3) {
+            setFlag(table, x, y);
+        }
+        break;
     }
 }
 
@@ -261,22 +280,7 @@ Board init(int size, int iMinesAmount) {
     for (int j = 0; j < table.size * table.size; j++) {
 
     }
-
-     //int r = time(NULL);
-     //int i = 0;
-     //while (iMinesAmount > 0) {
-     //    i++;
-     //    int x = abs(r % size);
-     //    r *= time(NULL) % 9; r += 1;
-     //    int y = abs(r % size);
-     //    r *= time(NULL) % 9;
-     //    if (table.grid[x + y * table.size].content == 0) {
-     //        table.grid[x + y * table.size].content = 9;
-     //        iMinesAmount -= 1;
-     //    }
-     //}
-     generateMines(&table);
-     displayBoard(table);
+    generateMines(&table);
     return table;
 }
 
@@ -354,7 +358,6 @@ void check(Board* table, int x, int y) {
         }
     }
 }
-
 
 void setFlag (Board* table, int x, int y) {
     printf("OK OK");
