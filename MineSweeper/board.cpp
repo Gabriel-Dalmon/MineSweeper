@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <conio.h>
-#include "src\msutils.h"
-#include "src\board.h"
+#include "headers\board.h"
+#include "headers\msutils.h"
 
 void construct(Board* oBoard, int iGridLength, int iMinesAmount) {
     oBoard->iGridLength = iGridLength;
@@ -129,33 +129,7 @@ int isGameOver(Board* oBoard, int x, int y) {
     }
 }
 
-int ZQSDActionSelector(Board* oBoard) {
-    char cKeyPress = 'a';
-    while (true) {
-        system("CLS");
-        displayBoard(*oBoard);
-        cKeyPress = _getch();
 
-        if (cKeyPress == 'z') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1] - 1, 1);
-        }
-        else if (cKeyPress == 'q') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0] - 1, 0);
-        }
-        else if (cKeyPress == 's') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1] + 1, 1);
-        }
-        else if (cKeyPress == 'd') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0] + 1, 0);
-        }
-        else if (cKeyPress == '1') {
-            return 1;
-        }
-        else if (cKeyPress == '2') {
-            return 2;
-        }
-    }
-}
 
 void displayBoard(Board oBoard) {
     for (int i = 0; i < oBoard.iGridLength; i++) {

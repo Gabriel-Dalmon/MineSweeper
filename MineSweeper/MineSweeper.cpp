@@ -8,8 +8,8 @@
 #include <conio.h>
 #include <math.h>
 
-#include "src\board.h"
-#include "src\msutils.h"
+#include "headers\board.h"
+#include "headers\msutils.h"
 
 int ZQSDActionSelector(Board* oBoard);
 
@@ -59,6 +59,34 @@ int main()
 }
 
 
+int ZQSDActionSelector(Board* oBoard) {
+    char cKeyPress = 'a';
+    while (true) {
+        system("CLS");
+        displayBoard(*oBoard);
+        cKeyPress = _getch();
+
+        if (cKeyPress == 'z') {
+            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1] - 1, 1);
+        }
+        else if (cKeyPress == 'q') {
+            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0] - 1, 0);
+        }
+        else if (cKeyPress == 's') {
+            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1] + 1, 1);
+        }
+        else if (cKeyPress == 'd') {
+            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0] + 1, 0);
+        }
+        else if (cKeyPress == '1') {
+            return 1;
+        }
+        else if (cKeyPress == '2') {
+            return 2;
+        }
+    }
+}
+
 
 void tmpFuncGetData(int* iGridLength, int* iDifficulty) {
     printf("Enter the length of the grid: ");
@@ -96,5 +124,4 @@ void tmpFuncGetControlMode(char* cZQSDControl) {
         scanf_s("%c", cZQSDControl);
     }
 }
-
 

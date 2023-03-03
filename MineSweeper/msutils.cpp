@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "src\msutils.h"
+#include "headers\msutils.h"
 
 
 void getInput(int* dest) {
