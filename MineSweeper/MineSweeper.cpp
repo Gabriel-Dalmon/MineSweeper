@@ -27,8 +27,15 @@ int main()
     Board oBoard;
     construct(&oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty));
     
-    //char cZQSDControl;
-    //tmpFuncGetControlMode(&cZQSDControl);
+    /*char cZQSDControl;
+    int (*pfnGetAction)(Board*);
+    tmpFuncGetControlMode(&cZQSDControl);
+    if(cZQSDControl == y){
+        pfnGetAction = ZQSDActionSelector;
+    } else {
+        pfnGetAction = consoleCoordsSelector;
+    }
+    */
     
     int (*pfnGetAction)(Board*);
     pfnGetAction = ZQSDActionSelector;
@@ -58,50 +65,6 @@ int main()
     else {
         printf("You Won");
     }
-
-    /*if(false)
-    {
-        while (isPlaying == 1)
-        {
-            char flag = 'o';
-
-            while (flag != 'y' && flag != 'n') {
-                printf("flag ? (y / n)");
-                res = scanf_s(" %c", &flag, 1);
-            }
-
-
-
-            int x = -1;
-            int y = -1;
-            res = 0;
-
-            while (res != 2 || 0 > x || x >= iGridLength || 0 > y || y >= iGridLength) {
-                printf("choisissez les coordonnées (x puis y)");
-                while (getchar() != '\n' && getchar() != EOF) {
-                    int ch = getchar();
-                }
-                res = scanf_s(" %d %d", &x, &y);
-            }
-
-
-
-            if (flag == 'n')
-            {
-                revealCase(&oBoard, x, y);
-                isGameOver(&oBoard, x, y, &isPlaying);
-            }
-            else
-            {
-                setFlag(&oBoard, x, y);
-            }
-
-
-            displayBoard(oBoard);
-
-            system("CLS");
-        }
-    }   */
     return 0;
 }
 
@@ -145,63 +108,3 @@ void tmpFuncGetControlMode(char* cZQSDControl) {
 }
 
 
-
-//init la fenêtre = fonction pointer pour afficher le contenu de la fenêtre, gestion des évènements
-//while
-//ptnFunctionEventController(fenêtre,event.type)
-// update fenêtre
-//animationsHandler()
-//displayContent(fenêtre)
-
-//struct Board
-//struct Menu
-//struct Button {function pointer}
-
-//fenêtre(type=Menu) Menu menu
-//fenêtre(type=Game) Board board
-// 
-//  #define WINDOWS_HEAD
-//          type
-//          eventController
-//          animationsHandler
-// 
-// struct Window
-// type
-// eventController
-// content = &Menu
-// 
-// void (*revealCase)(x,y)
-// 
-// for
-// for 
-// Case.contnet = 9
-// Case.revealCase = revealCaseMine
-// 
-// Menu menu;
-// 
-// Mado mado;
-// mado.type = GAME;
-// mado.content = Board board
-// mado.display = displayMenu
-// 
-// 
-// *mado.display(mado)
-// 
-// displayMenu(mado){
-// mado.content displayed this way
-// }
-// 
-// // displayGame(mado){
-// mado.content displayed differently
-// }
-// 
-// 
-// struct MADO_HEAD {
-//  int a;
-//  Case* grid;
-//  void (*function)(void* this);
-// }
-// 
-// MADO.HEAD.function(MADOHEAD)
-// 
-//pas de ptnFunction mais surcharge de la fonction display

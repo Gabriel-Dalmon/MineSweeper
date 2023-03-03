@@ -1,8 +1,6 @@
 #ifndef BOARD_H_INCLUDED
 #define BOARD_H_INCLUDED
 
-
-
 typedef struct Case {
     int iContent; // 9 = mines, 0-8 = amount of adjacent mines
     int isVisible; // 1 = visible, 0 = hidden;
