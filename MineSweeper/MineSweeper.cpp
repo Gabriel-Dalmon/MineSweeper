@@ -14,8 +14,6 @@
 #define MADO_HEAD                           \
             SDL_Window* window ;            \
             SDL_Renderer* renderer;         \
-            void(*display)(void* render);   \
-            void(*control)(void* render);   \
 
             
 
@@ -38,9 +36,9 @@ typedef struct Board {
 } Board;
 
 
-//typedef struct Menu{
+typedef struct Menu{
 
-//}Menu;
+}Menu;
 
 
 typedef struct GameMado {
@@ -50,6 +48,7 @@ typedef struct GameMado {
 
 typedef struct MenuMado {
     MADO_HEAD
+    Menu* menu;
 } MMado;
 
 
@@ -60,10 +59,13 @@ void check(Board* table, int x, int y);
 void setFlag(Board* table, int x, int y);
 void generateMines(Board* oBoard);
 void oddToEvenByLower(int* number);
-void checkWin(Board* table, int x, int y, int* playing);
-void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer);
+void checkWin(Board* table, int x, int y);
+void displayUI(GMado* mado);
 void displayMenu(MMado* menu);
-void gameControl(SDL_Event* event, Board* table, int* isPlaying);
+void control(SDL_Event* event, Board* table);
+
+
+int playing = 0;
 
 
 int main(int argc, char* argv[])
@@ -90,51 +92,45 @@ int main(int argc, char* argv[])
     GMado game;
     TTF_Init();
 
-    window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
+    game.window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
+    game.renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
     
 
     int running = 1;
-    int isPlaying = 0;
 
 
 
-    while (running == 1) {
-
-
-        displayMenu(&mainMenu);
+    void* printing = &mainMenu;
 
 
 
-        while (isPlaying == 1)
-        {
-
-            SDL_Event event;
-            while (SDL_PollEvent(&event)) {
-                int* tempArray = (int*)malloc(sizeof(void*) * 3);
-                tempArray = (&event, &table, &isPlaying);
-                game.control(tempArray);
-                free(tempArray);
-            }
-
-            displayUI(&table, window, renderer);
 
 
+    while (running == 1)
+    {
+
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+
+            control(&event, &table);
         }
-        
+
+        displayUI(&game);
+
+
+
     }
+        
 
     return 0;
 }
 
 
 
-void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer) {
+void displayUI(GMado* mado) {
     
-
-
-
-
+    Board* board = mado->board;
+    SDL_Renderer* renderer = mado->renderer;
 
     SDL_Rect tile;
     SDL_Color fontColor;
@@ -144,8 +140,6 @@ void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer) {
     SDL_Texture* indicTile;
     SDL_Surface* flagImg = IMG_Load("img/good_flag.png");
     SDL_Texture* flagTexture = SDL_CreateTextureFromSurface(renderer, flagImg);
-
-
 
 
 
@@ -234,7 +228,7 @@ void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer) {
 }
 
 
-void displayMenu(MMado* menu) {
+void displayUI(MMado* menu) {
 
 }
 
@@ -242,9 +236,7 @@ void displayMenu(MMado* menu) {
 
 
 
-void gameControl(void* render) {
-    render = 2;
-    SDL_Event* event, Board* table, int* isPlaying
+void control(SDL_Event* event, Board* table) {
     switch (event->type)
     {
     case SDL_MOUSEBUTTONDOWN:
@@ -254,7 +246,7 @@ void gameControl(void* render) {
 
         if (event->button.button == 1) {
             reveal(table, x, y);
-            checkWin(table, x, y, isPlaying);
+            checkWin(table, x, y);
         }
         else if (event->button.button == 3) {
             setFlag(table, x, y);
@@ -262,6 +254,26 @@ void gameControl(void* render) {
         break;
     }
 }
+
+/*void control(SDL_Event* event, Menu* table) {
+    switch (event->type)
+    {
+    case SDL_MOUSEBUTTONDOWN:
+
+        int x = event->button.x;
+        int y = event->button.y;
+
+        if (event->button.button == 1) {
+            reveal(table, x, y);
+            return checkWin(table, x, y);
+        }
+        else if (event->button.button == 3) {
+            setFlag(table, x, y);
+        }
+        return 1;
+    }
+}*/
+
 
 Board init(int size, int iMinesAmount) {
     Board table;
@@ -369,15 +381,15 @@ void setFlag (Board* table, int x, int y) {
     }
 }
 
-void checkWin(Board* table, int x, int y, int* playing) {
+void checkWin(Board* table, int x, int y) {
     if (table->grid[x + y * table->size].content == 9)
     {
         printf("c'est lose\n");
-        *playing = 0;
+        playing = 0;
     }
     else if (table->remaining == 0)
     {
         printf("you won, congrats boy\n");
-        *playing = 0;
+        playing = 0;
     }
 }
