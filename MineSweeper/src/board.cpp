@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <conio.h>
-#include "msutils.h"
-#include "board.h"
+#include "src\msutils.h"
+#include "src\board.h"
 
 void construct(Board* oBoard, int iGridLength, int iMinesAmount) {
     oBoard->iGridLength = iGridLength;
@@ -45,27 +45,24 @@ void generateMines(Board* oBoard) {
             oddToEvenByLower(&randomIndex);
             if (randomIndex != iFreeCasesLength - 1) {
                 setMine(oBoard, freeCases[randomIndex], freeCases[randomIndex + 1]);
-
-                /*oBoard->grid[freeCases[randomIndex] + freeCases[randomIndex + 1] * oBoard->iGridLength].iContent = 9;
-                oBoard->grid[freeCases[randomIndex] + freeCases[randomIndex + 1] * oBoard->iGridLength].isVisible = 1;*/
                 freeCases[randomIndex] = tmpLastFreeCase[0];
                 freeCases[randomIndex + 1] = tmpLastFreeCase[1];
             }
         }
         else {
-            //int r = time(NULL);
-            //int i = 0;
-            //while (iMinesAmount > 0) {
-            //    i++;
-            //    int x = abs(r % iGridLength);
-            //    r *= time(NULL) % 9; r += 1;
-            //    int y = abs(r % iGridLength);
-            //    r *= time(NULL) % 9;
-            //    if (oBoard.grid[x + y * oBoard.iGridLength].iContent == 0) {
-            //        oBoard.grid[x + y * oBoard.iGridLength].iContent = 9;
-            //        iMinesAmount -= 1;
-            //    }
-            //}
+            int r = time(NULL);
+            int i = 0;
+            while (oBoard->iMinesAmount > 0) {
+                i++;
+                int x = abs(r % oBoard->iGridLength);
+                r *= time(NULL) % 9; r += 1;
+                int y = abs(r % oBoard->iGridLength);
+                r *= time(NULL) % 9;
+                if (oBoard->grid[x + y * oBoard->iGridLength].iContent == 0) {
+                    oBoard->grid[x + y * oBoard->iGridLength].iContent = 9;
+                    oBoard->iMinesAmount -= 1;
+                }
+            }
             break;
         }
     }
@@ -104,11 +101,11 @@ void setFlag(Board* oBoard, int x, int y) {
 void revealCase(Board* oBoard, int x, int y) {
     if (getCaseByXY(oBoard, x, y)->isVisible == 0) {
         getCaseByXY(oBoard, x, y)->isVisible = 1;
+        getCaseByXY(oBoard, x, y)->isFlag = 0;
         oBoard->remaining -= 1;
         if (getCaseByXY(oBoard, x, y)->iContent == 0) {
             for (int i = -1; i < 2; i++) {  //to do : double loop function to get adjacent cases
                 for (int j = -1; j < 2; j++) {
-                    printf("Loop : %d|%d\n", j, i);
                     if (isCoordInGrid(&oBoard->iGridLength, x + j, y + i) && getCaseByXY(oBoard, x + j, y + i)->isVisible != 1) {
                         revealCase(oBoard, x + j, y + i);
                     }

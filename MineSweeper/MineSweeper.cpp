@@ -8,10 +8,9 @@
 #include <conio.h>
 #include <math.h>
 
-#include "board.h"
-#include "msutils.h"
+#include "src\board.h"
+#include "src\msutils.h"
 
-//int consoleCoordsSelector(Board* oBoard);
 int ZQSDActionSelector(Board* oBoard);
 
 void tmpFuncGetData(int* iGridLength, int* iDifficulty);
@@ -25,20 +24,11 @@ int main()
     tmpFuncGetData(&iGridLength, &iDifficulty);//,&iMinesAmount);
 
     Board oBoard;
-    construct(&oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty));
-    
-    /*char cZQSDControl;
-    int (*pfnGetAction)(Board*);
-    tmpFuncGetControlMode(&cZQSDControl);
-    if(cZQSDControl == y){
-        pfnGetAction = ZQSDActionSelector;
-    } else {
-        pfnGetAction = consoleCoordsSelector;
-    }
-    */
+    construct(&oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty /2));
     
     int (*pfnGetAction)(Board*);
     pfnGetAction = ZQSDActionSelector;
+
 
     int actionType;
 
