@@ -61,9 +61,9 @@ void setFlag(Board* table, int x, int y);
 void generateMines(Board* oBoard);
 void oddToEvenByLower(int* number);
 void checkWin(Board* table, int x, int y, int* playing);
-void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer);
+void displayUI(GMado game);
 void displayMenu(MMado* menu);
-void gameControl(SDL_Event* event, Board* table, int* isPlaying);
+void gameControl(SDL_Event* event, Board* table);
 
 
 int main(int argc, char* argv[])
@@ -88,6 +88,7 @@ int main(int argc, char* argv[])
     SDL_Renderer* renderer;
     MMado mainMenu;
     GMado game;
+    game.control = gameControl;
     TTF_Init();
 
     window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
@@ -111,13 +112,10 @@ int main(int argc, char* argv[])
 
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
-                int* tempArray = (int*)malloc(sizeof(void*) * 3);
-                tempArray = (&event, &table, &isPlaying);
-                game.control((void*)tempArray);
-                free(tempArray);
+                game.control(&event, &table);
             }
 
-            displayUI(&table, window, renderer);
+            displayUI(game);
 
 
         }
@@ -129,10 +127,12 @@ int main(int argc, char* argv[])
 
 
 
-void displayUI(Board* board, SDL_Window* window, SDL_Renderer* renderer) {
+void displayUI(GMado game) {
     
 
-
+    Board* board = game.board; 
+    SDL_Window* window = game.window;
+    SDL_Renderer* renderer = game.renderer;
 
 
 
@@ -242,11 +242,9 @@ void displayMenu(MMado* menu) {
 
 
 
-void gameControl(void* render) {
-    int* convertRender = (int*) render;
-    SDL_Event* event = (SDL_Event*)convertRender[0];
-    Board* table;
-    int* isPlaying;
+void gameControl(SDL_Event* event, Board* table) {
+
+    int isPlaying;
     switch (event->type)
     {
     case SDL_MOUSEBUTTONDOWN:
