@@ -18,51 +18,6 @@ void tmpFuncGetControlMode(char* cZQSDControl);
 
 
 int main()
-void generateMines(Board* oBoard);
-    int isPlaying = 1;
-    int iGridLength, iDifficulty; //,iMinesAmount;
-    tmpFuncGetData(&iGridLength, &iDifficulty);//,&iMinesAmount);
-void displayMenu(MMado* menu);
-void gameControl(SDL_Event* event, Board* table);
-
-
-int main(int argc, char* argv[])
-void generateMines(Board* oBoard);
-void oddToEvenByLower(int* number);
-void checkWin(Board* table, int x, int y, int* playing);
-void displayUI(GMado game);
-void displayMenu(MMado* menu);
-void gameControl(SDL_Event* event, Board* table);
-
-
-int main(int argc, char* argv[])
-void generateMines(Board* oBoard);
-void oddToEvenByLower(int* number);
-void checkWin(Board* table, int x, int y, int* playing);
-void displayUI(GMado game);
-void displayMenu(MMado* menu);
-void gameControl(SDL_Event* event, Board* table);
-
-
-int main(int argc, char* argv[])
-void generateMines(Board* oBoard);
-void oddToEvenByLower(int* number);
-void checkWin(Board* table, int x, int y, int* playing);
-void displayUI(GMado game);
-void displayMenu(MMado* menu);
-void gameControl(SDL_Event* event, Board* table);
-
-
-int main(int argc, char* argv[])
-void generateMines(Board* oBoard);
-void oddToEvenByLower(int* number);
-void checkWin(Board* table, int x, int y, int* playing);
-void displayUI(GMado game);
-void displayMenu(MMado* menu);
-void gameControl(SDL_Event* event, Board* table);
-
-
-int main(int argc, char* argv[])
 {
     int isPlaying = 1;
     int iGridLength, iDifficulty; //,iMinesAmount;
@@ -170,3 +125,72 @@ void tmpFuncGetControlMode(char* cZQSDControl) {
     }
 }
 
+/******************************************************************************
+
+                            Online C Compiler.
+                Code, Compile, Run and Debug C program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+//#include <stdio.h>
+//
+//enum shapes { CIRCLE, RECTANGLE, SQUARE };
+//
+//// #define SCREEN_HEAD                 \
+////         int i;                      \
+////         enum shapes type;           \
+////         char name[20]               \
+////         double (*area)(void* this)  \
+////         double (*perimeter)(void* this)  \
+//
+//typedef struct Square {
+//    int id;
+//    enum shapes type;
+//    char name[20];
+//    double (*area)(void* this);
+//    double (*perimeter)(void* this);
+//    double s;
+//} Square;
+//
+//double s_area(void* this) {
+//    Square* me = (Square*)this;
+//    return me->s * me->s;
+//}
+//
+//double s_perimeter(void* this) {
+//    Square* me = (Square*)this;
+//    return me->s * 4.0;
+//}
+//
+//typedef struct Circle {
+//    int id;
+//    enum shapes type;
+//    char name[20];
+//    double (*area)(void* this);
+//    double (*perimeter)(void* this);
+//    double r;
+//} Circle;
+//
+//double c_area(void* this) {
+//    Circle* me = (Circle*)this;
+//    return me->r * me->r * 3.14;
+//}
+//
+//double c_perimeter(void* this) {
+//    Circle* me = (Circle*)this;
+//    return 2 * me->r * 3.14;
+//}
+//
+//
+//int main()
+//{
+//
+//    Square square = { 1, SQUARE, "square", &s_area, &s_perimeter, 2 };
+//    Circle circle = { 2, CIRCLE, "circle", &c_area, &c_perimeter,4 };
+//    printf("Hello World\n");
+//    printf("Square : id=%d, type=%d, name=%s, area=%.1f, perimeter=%.1f\n", square.id, square.type, square.name, square.area(&square), square.perimeter(&square));
+//    printf("Circle : id=%d, type=%d, name=%s, area=%.1f, perimeter=%.1f\n", circle.id, circle.type, circle.name, circle.area(&circle), circle.perimeter(&circle));
+//
+//    return 0;
+//}
