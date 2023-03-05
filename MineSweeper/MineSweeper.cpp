@@ -18,6 +18,51 @@ void tmpFuncGetControlMode(char* cZQSDControl);
 
 
 int main()
+void generateMines(Board* oBoard);
+    int isPlaying = 1;
+    int iGridLength, iDifficulty; //,iMinesAmount;
+    tmpFuncGetData(&iGridLength, &iDifficulty);//,&iMinesAmount);
+void displayMenu(MMado* menu);
+void gameControl(SDL_Event* event, Board* table);
+
+
+int main(int argc, char* argv[])
+void generateMines(Board* oBoard);
+void oddToEvenByLower(int* number);
+void checkWin(Board* table, int x, int y, int* playing);
+void displayUI(GMado game);
+void displayMenu(MMado* menu);
+void gameControl(SDL_Event* event, Board* table);
+
+
+int main(int argc, char* argv[])
+void generateMines(Board* oBoard);
+void oddToEvenByLower(int* number);
+void checkWin(Board* table, int x, int y, int* playing);
+void displayUI(GMado game);
+void displayMenu(MMado* menu);
+void gameControl(SDL_Event* event, Board* table);
+
+
+int main(int argc, char* argv[])
+void generateMines(Board* oBoard);
+void oddToEvenByLower(int* number);
+void checkWin(Board* table, int x, int y, int* playing);
+void displayUI(GMado game);
+void displayMenu(MMado* menu);
+void gameControl(SDL_Event* event, Board* table);
+
+
+int main(int argc, char* argv[])
+void generateMines(Board* oBoard);
+void oddToEvenByLower(int* number);
+void checkWin(Board* table, int x, int y, int* playing);
+void displayUI(GMado game);
+void displayMenu(MMado* menu);
+void gameControl(SDL_Event* event, Board* table);
+
+
+int main(int argc, char* argv[])
 {
     int isPlaying = 1;
     int iGridLength, iDifficulty; //,iMinesAmount;
