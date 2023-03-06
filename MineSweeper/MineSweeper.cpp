@@ -8,6 +8,7 @@
 #include <math.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 typedef struct Case {
     int content;
@@ -59,6 +60,13 @@ int main(int argc, char* argv[])
 
 
     Board table = init(size, iMinesAmount); //round(size/difficultie));
+
+
+    Mix_Init(0x00000008);//on iinitialise au format mp3
+
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+    Mix_Music* mainLoop = Mix_LoadMUS("audio/main_loop.mp3");
+    Mix_PlayMusic(mainLoop, -1);
 
 
     SDL_Window* window;
