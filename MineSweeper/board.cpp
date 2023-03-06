@@ -29,7 +29,6 @@ void generateMines(Board* oBoard) {
         for (int j = 0; j < oBoard->iGridLength; j++) {
             freeCases[i * oBoard->iGridLength * 2 + j * 2] = i;
             freeCases[i * oBoard->iGridLength * 2 + j * 2 + 1] = j;
-            printf("%d", i * oBoard->iGridLength * 2 + j * 2 + 1);
         }
     }
 
