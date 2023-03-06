@@ -7,17 +7,20 @@
 #include <time.h>
 #include <conio.h>
 #include <math.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
+#include <SDL_image.h>
 
 #include "headers\board.h"
 #include "headers\msutils.h"
 
-int ZQSDActionSelector(Board* oBoard);
-
 void tmpFuncGetData(int* iGridLength, int* iDifficulty);
 void tmpFuncGetControlMode(char* cZQSDControl);
 
+void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer);
+void eventHandler(SDL_Event* event, Board* oBoard);
 
-int main()
+int main(int argc, char* argv[])
 {
     int isPlaying = 1;
     int iGridLength, iDifficulty; //,iMinesAmount;
@@ -26,27 +29,23 @@ int main()
     Board oBoard;
     construct(&oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty /2));
     
-    int (*pfnGetAction)(Board*);
-    pfnGetAction = ZQSDActionSelector;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    TTF_Init();
+    window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
 
-
-    int actionType;
 
     while (!isGameOver(&oBoard, oBoard.iCursorPosition[0], oBoard.iCursorPosition[1])) {
         //EVENTS
-        actionType = pfnGetAction(&oBoard);
-
-        //UPDATE
-        if (actionType == 1) {
-            revealCase(&oBoard, oBoard.iCursorPosition[0], oBoard.iCursorPosition[1]);
-        }
-        else if (actionType == 2) {
-            setFlag(&oBoard, oBoard.iCursorPosition[0], oBoard.iCursorPosition[1]);
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            eventHandler(&event, &oBoard);
         }
 
         //DISPLAY
         system("CLS");
-        displayBoard(oBoard);
+        displayUI(&oBoard, window, renderer);
     }
 
     if (isGameOver(&oBoard, oBoard.iCursorPosition[0], oBoard.iCursorPosition[1]) == 1) {
@@ -59,31 +58,128 @@ int main()
 }
 
 
-int ZQSDActionSelector(Board* oBoard) {
-    char cKeyPress = 'a';
-    while (true) {
-        system("CLS");
-        displayBoard(*oBoard);
-        cKeyPress = _getch();
 
-        if (cKeyPress == 'z') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1] - 1, 1);
+
+
+
+int running = 1;
+int isPlaying = 0;
+
+
+
+void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer) {
+
+    SDL_Rect tile;
+    SDL_Color fontColor;
+    TTF_Font* vera = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 16);
+    SDL_Surface* message;
+    char content[2];
+    SDL_Texture* indicTile;
+    SDL_Surface* flagImg = IMG_Load("img/good_flag.png");
+    SDL_Texture* flagTexture = SDL_CreateTextureFromSurface(renderer, flagImg);
+
+
+
+
+
+    for (int i = 0; i < oBoard->iGridLength; i++) {
+        for (int j = 0; j < oBoard->iGridLength; j++)
+        {
+
+            tile = { j * 20, i * 20 , 20, 20 };//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+
+            if (oBoard->grid[i * 15 + j].isFlag == 1) {
+
+                if ((i * 15 + j) % 2 == 0) {
+                    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
+                }
+                else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
+
+                SDL_RenderFillRect(renderer, &tile);
+                SDL_RenderCopy(renderer, flagTexture, NULL, &tile);
+
+
+            }
+            else if (oBoard->grid[i * 15 + j].isVisible == 0) {
+
+
+                if ((i * 15 + j) % 2 == 0) {
+                    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
+                }
+                else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
+
+
+                SDL_RenderFillRect(renderer, &tile);
+
+
+            }
+            else if (oBoard->grid[i * 15 + j].isVisible == 1) {
+
+
+                if ((i * 15 + j) % 2 == 0) {
+                    SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
+                }
+                else {
+                    SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+                }
+
+
+                if (oBoard->grid[i * 15 + j].iContent == 0) {
+                    SDL_GetRenderDrawColor(renderer, &fontColor.r, &fontColor.g, &fontColor.b, &fontColor.a);
+                }
+                else if (oBoard->grid[i * 15 + j].iContent == 1) {
+                    fontColor = { 66,147, 245, 255 };
+                }
+                else if (oBoard->grid[i * 15 + j].iContent == 2) {
+                    fontColor = { 144, 66, 245, 255 };
+                }
+                else if (oBoard->grid[i * 15 + j].iContent >= 3) {
+                    fontColor = { 201, 8, 8, 255 };
+                }
+
+
+                sprintf_s(content, "%d", oBoard->grid[i * 15 + j].iContent);
+                SDL_RenderFillRect(renderer, &tile);
+                message = TTF_RenderText_Blended(vera, content, fontColor);
+                indicTile = SDL_CreateTextureFromSurface(renderer, message);
+                SDL_RenderCopy(renderer, indicTile, NULL, &tile);
+            }
         }
-        else if (cKeyPress == 'q') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0] - 1, 0);
+    }
+
+
+    SDL_RenderPresent(renderer);
+
+    //SDL_WaitEvent(event);
+    //SDL_Delay(1000);//pause de 3 secondes
+
+    ////on libère tout
+    ////SDL_FreeSurface(message);
+    //TTF_CloseFont(vera);
+    ////SDL_DestroyTexture(indicTile);
+    //SDL_DestroyRenderer(renderer);
+    //SDL_DestroyWindow(window);
+    //TTF_Quit();
+    //SDL_Quit(); 
+}
+
+
+void eventHandler(SDL_Event* event, Board* oBoard) {
+
+    switch (event->type)
+    {
+    case SDL_MOUSEBUTTONDOWN:
+
+        int x = floor(event->button.x / 20);
+        int y = floor(event->button.y / 20);
+
+        if (event->button.button == 1) {
+            revealCase(oBoard, x, y);
         }
-        else if (cKeyPress == 's') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[1] + 1, 1);
+        else if (event->button.button == 3) {
+            setFlag(oBoard, x, y);
         }
-        else if (cKeyPress == 'd') {
-            setCursorSinleAxis(oBoard, oBoard->iCursorPosition[0] + 1, 0);
-        }
-        else if (cKeyPress == '1') {
-            return 1;
-        }
-        else if (cKeyPress == '2') {
-            return 2;
-        }
+        break;
     }
 }
 
