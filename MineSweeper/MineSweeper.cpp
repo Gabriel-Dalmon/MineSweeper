@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <time.h>
 #include <conio.h>
 #include <math.h>
@@ -46,8 +47,8 @@ typedef struct Button{
     int positionY;
     const char* text;
     void* adress;
-    int(*isClicked)(int x, int y);
-    void(*control)(void* this_t);//trouver comment avoid ces arguments
+    int(*isClicked)(int x, int y, Button* button);
+    void(*control)(void* something, ...);
     void(*print)(Button* button, SDL_Renderer* renderer);
 }Button;
 
@@ -66,7 +67,7 @@ typedef struct GameMado {
 typedef struct MenuMado {
     MADO_HEAD
     Button* buttons; //on a une liste de boutons avec leurs caracteristiques et MenuMado va devoir les afficher
-    void(*control)(SDL_Event* event, MenuMado* menu);
+    void(*control)(SDL_Event* event, MenuMado* menu, GMado* toChange);
     int nbButtons;
 } MMado;
 
@@ -82,11 +83,12 @@ void checkWin(Board* table, int x, int y, int* playing);
 void displayUI(GMado* game);
 void displayMenu(MMado* menu);
 void gameControl(SDL_Event* event, Board* table);
-void controlMenu(SDL_Event* event, MMado* menu);
+void controlMenu(SDL_Event* event, MMado* menu, GMado* toChange);
 void initMenu(MMado* menu);
 void printRectBtn(Button* button, SDL_Renderer* renderer);
-void goToGameAdress(GMado* game, GMado* activeOne);
+void goToGameAdress(void* smth, ...);
 void goToMenuAdress(GMado* game, MMado* menu, MMado* activeOne);
+int rectIsClicked(int x, int y, Button* button);
 
 
 int main(int argc, char* argv[])
@@ -119,6 +121,7 @@ int main(int argc, char* argv[])
     play.height = 75;
     play.text = "DIV";
     play.print = printRectBtn;
+    play.isClicked = rectIsClicked;
     play.control = goToGameAdress;
 
 
@@ -168,7 +171,7 @@ int main(int argc, char* argv[])
         else {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
-                mainMenu.control(&event, &mainMenu);
+                mainMenu.control(&event, &mainMenu, &game);
             }
 
             displayMenu(&mainMenu);
@@ -350,6 +353,16 @@ void printRectBtn(Button* button, SDL_Renderer* renderer) {
     SDL_RenderCopy(renderer, indicTile, NULL, &shape);
 }
 
+int rectIsClicked(int x, int y, Button* button){
+    if (button->positionX < x < button->positionX + button->width && button->positionY < y < button->positionY + button->height) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+
 
 void gameControl(SDL_Event* event, Board* table) {
 
@@ -374,7 +387,9 @@ void gameControl(SDL_Event* event, Board* table) {
 }
 
 
-void controlMenu(SDL_Event* event, MMado* menu) {
+void controlMenu(SDL_Event* event, MMado* menu, GMado* toChange) {
+    void* useless;
+    useless = &event;
     switch (event->type)
     {
     case SDL_MOUSEBUTTONDOWN:
@@ -383,9 +398,10 @@ void controlMenu(SDL_Event* event, MMado* menu) {
         int y = floor(event->button.y);
 
         if (event->button.button == 1) {
-            for (int i = 0; i < 3; i++) {
-                if(menu->buttons[i].isClicked(x, y) == 1) {
-                    menu->buttons[i].control(menu->buttons[i].adress);
+            for (int i = 0; i < menu->nbButtons; i++) {
+                if(menu->buttons[i].isClicked(x, y, menu->buttons) == 1) {
+                    menu->buttons[i].control(useless, menu->buttons[i].adress, toChange);
+                    
                 }
             }
         }
@@ -394,10 +410,17 @@ void controlMenu(SDL_Event* event, MMado* menu) {
 }
 
 
-void goToGameAdress(void* game, GMado* activeOne) {
-    GMado* gameu = (GMado*)game;
-    gameu->active = 1;
-    activeOne = gameu;
+void goToGameAdress(void* smth, ...) {//plante netre ok1 et 2
+    printf("ok1");
+    va_list args;
+    va_start(args, smth);
+    GMado* game = va_arg(args, GMado*);
+    GMado* toChange = va_arg(args, GMado*);
+    va_end(args);
+    toChange = game;
+    game->active = 1; //soucis ici
+    printf("ok2");
+    //activeOne = game;
 }
 
 void goToMenuAdress(GMado* game, MMado* menu, MMado* activeOne) {
