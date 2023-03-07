@@ -38,9 +38,11 @@ typedef struct Board {
 } Board;
 
 
-//typedef struct Menu{
-
-//}Menu;
+typedef struct Button{
+    int height;
+    int width;
+    char* text;
+}Button;
 
 
 typedef struct GameMado {
@@ -50,6 +52,7 @@ typedef struct GameMado {
 
 typedef struct MenuMado {
     MADO_HEAD
+    Button** buttons; //on a une liste de boutons avec leurs caracteristiques et MenuMado va devoir les afficher
 } MMado;
 
 
