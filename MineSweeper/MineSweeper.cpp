@@ -53,7 +53,7 @@ void tmpFuncGetData(int* iGridLength, int* iDifficulty);
 void tmpFuncGetControlMode(char* cZQSDControl);
 
 void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources);
-void eventHandler(SDL_Event* event, Board* oBoard);
+void eventHandler(SDL_Event* event, SDL_Window* window, Board* oBoard);
 
 int main(int argc, char* argv[])
 {
@@ -71,16 +71,17 @@ int main(int argc, char* argv[])
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
     loadMSSDLRessources(&oScreen.SDLRessources, renderer);
 
+    SDL_Event event;
 
     while (!isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1])) {
         //EVENTS
-        SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            eventHandler(&event, &oScreen.oBoard);
+            
+                eventHandler(&event, window, &oScreen.oBoard);
         }
-
         //DISPLAY
-        displayUI(&oScreen.oBoard, window, renderer, &oScreen.SDLRessources);
+            displayUI(&oScreen.oBoard, window, renderer, &oScreen.SDLRessources);
+        
     }
 
     if (isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1]) == 1) {
@@ -96,19 +97,21 @@ int main(int argc, char* argv[])
 
 void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources) {
     SDL_RenderClear(renderer);    
-
     int sizeWedged = oBoard->iGridLength;
+    int winWidth, winHeight;
+    SDL_GetWindowSize(window, &winWidth, &winHeight);
 
-    for (int i = 0; i < oBoard->iGridLength; i++) {
-        for (int j = 0; j < oBoard->iGridLength; j++)
+
+    for (int iRow = 0; iRow < oBoard->iGridLength; iRow++) {
+        for (int iCol = 0; iCol < oBoard->iGridLength; iCol++)
         {
 
-            ressources->tile.x = j * 50;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
-            ressources->tile.y = i * 50;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+            ressources->tile.x = iCol * 50 + winWidth/2 - (50 * sizeWedged)/2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+            ressources->tile.y = iRow * 50 + winHeight / 2 - (50 * sizeWedged) / 2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
             
-            if (oBoard->grid[i * oBoard->iGridLength + j].isFlag == 1) {
+            if (oBoard->grid[iRow * oBoard->iGridLength + iCol].isFlag == 1) {
 
-                if ((i * oBoard->iGridLength + j) % 2 == 0) {
+                if ((iRow * oBoard->iGridLength + iCol) % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
                 }
                 else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
@@ -118,10 +121,10 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_
 
 
             }
-            else if (oBoard->grid[i * oBoard->iGridLength + j].isVisible == 0) {
+            else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].isVisible == 0) {
 
 
-                if ((i * sizeWedged + j) % 2 == 0) {
+                if ((iRow * sizeWedged + iCol) % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
                 }
                 else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
@@ -131,10 +134,10 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_
 
 
             }
-            else if (oBoard->grid[i * oBoard->iGridLength + j].isVisible == 1) {
+            else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].isVisible == 1) {
 
 
-                if ((i * sizeWedged + j) % 2 == 0) {
+                if ((iRow * sizeWedged + iCol) % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
                 }
                 else {
@@ -142,25 +145,28 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_
                 }
 
 
-                if (oBoard->grid[i * oBoard->iGridLength + j].iContent == 0) {
+                if (oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent == 0) {
                     SDL_GetRenderDrawColor(renderer, &ressources->fontColor.r, &ressources->fontColor.g, &ressources->fontColor.b, &ressources->fontColor.a);
                 }
-                else if (oBoard->grid[i * oBoard->iGridLength + j].iContent == 1) {
+                else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent == 1) {
                     ressources->fontColor = { 66,147, 245, 255 };
                 }
-                else if (oBoard->grid[i * oBoard->iGridLength + j].iContent == 2) {
+                else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent == 2) {
                     ressources->fontColor = { 144, 66, 245, 255 };
                 }
-                else if (oBoard->grid[i * oBoard->iGridLength + j].iContent >= 3) {
+                else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent >= 3) {
                     ressources->fontColor = { 201, 8, 8, 255 };
                 }
 
-                sprintf_s(ressources->content, "%d", oBoard->grid[i * oBoard->iGridLength + j].iContent);
+                sprintf_s(ressources->content, "%d", oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent);
                 SDL_RenderFillRect(renderer, &ressources->tile);
 
                 ressources->message = TTF_RenderText_Blended(ressources->font, ressources->content, ressources->fontColor);
                 ressources->indicTile = SDL_CreateTextureFromSurface(renderer, ressources->message);
                 SDL_RenderCopy(renderer, ressources->indicTile, NULL, &ressources->tile);
+           
+                SDL_FreeSurface(ressources->message);
+                SDL_DestroyTexture(ressources->indicTile);
             }
         }
     }
@@ -171,7 +177,9 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_
 }
 
 
-void eventHandler(SDL_Event* event, Board* oBoard) {
+void eventHandler(SDL_Event* event, SDL_Window* window, Board* oBoard) {
+    int winWidth, winHeight;
+    SDL_GetWindowSize(window, &winWidth, &winHeight);
 
     switch (event->type)
     {
@@ -179,11 +187,16 @@ void eventHandler(SDL_Event* event, Board* oBoard) {
 
         int x = floor(event->button.x / 50);
         int y = floor(event->button.y / 50);
-        if (event->button.button == 1 && isCoordInGrid(&oBoard->iGridLength, x, y)) {
-            revealCase(oBoard, x, y);
+        int xCanva = floor((event->button.x - winWidth / 2 + (50 * oBoard->iGridLength) / 2) / 50);
+        int yCanva = floor((event->button.y - winHeight / 2 + (50 * oBoard->iGridLength) / 2) / 50);
+        printf("(%d|%d) - (%d|%d)", x, y, xCanva, yCanva);
+        if (event->button.button == 1 && isCoordInGrid(&oBoard->iGridLength, xCanva, yCanva)) {
+            revealCase(oBoard, xCanva, yCanva);
+            oBoard->iCursorPosition[0] = xCanva;
+            oBoard->iCursorPosition[1] = yCanva;
         }
-        else if (event->button.button == 3 && isCoordInGrid(&oBoard->iGridLength, x, y)) {
-            setFlag(oBoard, x, y);
+        else if (event->button.button == 3 && isCoordInGrid(&oBoard->iGridLength, xCanva, yCanva)) {
+            setFlag(oBoard, xCanva, yCanva);
         }
         break;
     }
@@ -313,3 +326,24 @@ Write your code in this editor and press "Run" button to compile and execute it.
 //isClickedRoundBoxx, y, width, height, callback, display, int isClicked(x, y)
 
 
+/*
+* 
+* button -> action(void* this, void* this)
+* 
+* GameMado game mado -> display Game
+* MenuMado menu mado -> display Menu
+Main : Mado mainMado -> display, eventHandler...
+
+switchMadoToGame(void* this) :
+    Mado* mado = (Mado*) this;
+
+quitGame(void* this)
+    int* arg = (int)
+
+update main mado display, eventhandler with game display, game eventhandler = displayMado = displayGame
+
+switchMadoToMenu : update main mado display, eventhandler with menu display, menu eventhandler
+
+
+
+*/
