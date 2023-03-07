@@ -90,6 +90,10 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer) {
     SDL_Surface* flagImg = IMG_Load("img/good_flag.png");
     SDL_Texture* flagTexture = SDL_CreateTextureFromSurface(renderer, flagImg);
 
+
+    int sizeWedged = oBoard->iGridLength;
+    if (oBoard->iGridLength % 2 == 0) { sizeWedged += 1; }
+
     
 
     for (int i = 0; i < oBoard->iGridLength; i++) {
@@ -114,7 +118,7 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer) {
             else if (oBoard->grid[i * oBoard->iGridLength + j].isVisible == 0) {
 
 
-                if ((i * oBoard->iGridLength + j) % 2 == 0) {
+                if ((i * sizeWedged + j) % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
                 }
                 else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
@@ -127,7 +131,7 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer) {
             else if (oBoard->grid[i * oBoard->iGridLength + j].isVisible == 1) {
 
 
-                if ((i * oBoard->iGridLength + j) % 2 == 0) {
+                if ((i * sizeWedged + j) % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
                 }
                 else {
