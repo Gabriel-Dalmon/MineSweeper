@@ -12,7 +12,7 @@
 #include <SDL_image.h>
 #include <windows.h>
 
-#include "headers\board.h"
+#include "headers\mslogic.h"
 #include "headers\msutils.h"
 
 enum SCREEN_TYPES {MAINMENU, MINESWEEPER};
