@@ -14,8 +14,8 @@
 #define MADO_HEAD                           \
             SDL_Window* window ;            \
             SDL_Renderer* renderer;         \
-            void(*display)(void* render);   \
-            void(*control)(void* render);   \
+            //void(*display)(void* render);   \
+            //void(*control)(void* render);   \
 
             
 
@@ -42,12 +42,22 @@ typedef struct Button{
     int height;
     int width;
     char* text;
+    void* adress;
 }Button;
+
+
+//
+void assign(Button* button, void* adress) {
+    button->adress = &adress;
+}
+
+
 
 
 typedef struct GameMado {
     MADO_HEAD
     Board* board;
+    void(*control)(SDL_Event* event, Board* table);
 } GMado;
 
 typedef struct MenuMado {
@@ -96,10 +106,17 @@ int main(int argc, char* argv[])
 
     window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
+
+    game.window = window;
+    game.renderer = renderer;
+    game.board = &table;
     
 
+    Button test;
+    test.adress = assign(&test, &game);
+
     int running = 1;
-    int isPlaying = 0;
+    int isPlaying = 1;
 
 
 
@@ -115,7 +132,7 @@ int main(int argc, char* argv[])
 
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
-                game.control(&event, &table);
+                game.control(&event, game.board);
             }
 
             displayUI(game);
@@ -239,6 +256,47 @@ void displayUI(GMado game) {
 
 void displayMenu(MMado* menu) {
 
+    SDL_Window* window = menu->window;
+    SDL_Renderer* renderer = menu->renderer;
+
+
+
+    SDL_Rect button;
+    TTF_Font* vera = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 16);
+    SDL_Surface* message;
+    SDL_Texture* indicTile;
+
+
+
+    for (int i = 0; i < 3; i++) {
+        button = { 20, i * 100 , menu->buttons[i]->height, menu->buttons[i]->width };//attention a bien changer 20 et i*100
+
+
+
+        SDL_RenderFillRect(renderer, &button);
+        message = TTF_RenderText_Blended(vera, menu->buttons[0]->text, { 201, 8, 8, 255 });
+        indicTile = SDL_CreateTextureFromSurface(renderer, message);
+        SDL_RenderCopy(renderer, indicTile, NULL, &button);
+    }
+
+
+
+    SDL_RenderPresent(renderer);
+
+
+
+
+    //SDL_WaitEvent(event);
+    //SDL_Delay(1000);//pause de 3 secondes
+
+    ////on libère tout
+    ////SDL_FreeSurface(message);
+    //TTF_CloseFont(vera);
+    ////SDL_DestroyTexture(indicTile);
+    //SDL_DestroyRenderer(renderer);
+    //SDL_DestroyWindow(window);
+    //TTF_Quit();
+    //SDL_Quit(); 
 }
 
 
@@ -248,6 +306,7 @@ void displayMenu(MMado* menu) {
 void gameControl(SDL_Event* event, Board* table) {
 
     int isPlaying;
+    isPlaying = 1;
     switch (event->type)
     {
     case SDL_MOUSEBUTTONDOWN:
@@ -257,7 +316,7 @@ void gameControl(SDL_Event* event, Board* table) {
 
         if (event->button.button == 1) {
             reveal(table, x, y);
-            checkWin(table, x, y, isPlaying);
+            checkWin(table, x, y, &isPlaying);
         }
         else if (event->button.button == 3) {
             setFlag(table, x, y);
