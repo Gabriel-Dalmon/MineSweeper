@@ -95,7 +95,9 @@ int main(int argc, char* argv[])
 
 
 void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources) {
-    SDL_RenderClear(renderer);
+    SDL_RenderClear(renderer);    
+
+    int sizeWedged = oBoard->iGridLength;
 
     for (int i = 0; i < oBoard->iGridLength; i++) {
         for (int j = 0; j < oBoard->iGridLength; j++)
@@ -119,7 +121,7 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_
             else if (oBoard->grid[i * oBoard->iGridLength + j].isVisible == 0) {
 
 
-                if ((i * oBoard->iGridLength + j) % 2 == 0) {
+                if ((i * sizeWedged + j) % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
                 }
                 else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
@@ -132,7 +134,7 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_
             else if (oBoard->grid[i * oBoard->iGridLength + j].isVisible == 1) {
 
 
-                if ((i * oBoard->iGridLength + j) % 2 == 0) {
+                if ((i * sizeWedged + j) % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
                 }
                 else {
