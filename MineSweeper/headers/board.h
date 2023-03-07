@@ -18,6 +18,7 @@ typedef struct Board {
 void construct(Board* oBoard, int iGridLength, int minesAmount);
 void generateMines(Board* oBoard);
 
+
 Case* getCaseByXY(Board* oBoard, int x, int y);
 void setFlag(Board* oBoard, int x, int y);
 void incrementAdjMinesAmount(Board* oBoard, int x, int y);

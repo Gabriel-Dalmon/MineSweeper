@@ -10,14 +10,49 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include <windows.h>
 
 #include "headers\board.h"
 #include "headers\msutils.h"
 
+enum SCREEN_TYPES {MAINMENU, MINESWEEPER};
+
+#define SCREEN_HEAD                            \
+        enum SCREEN_TYPES type; \
+        void (*displayScreen)(void* this_t);    \
+        void (*eventsHandler)(void* this_t);    \
+
+
+
+typedef struct MSSDL_Ressources {
+    SDL_Rect tile;
+    SDL_Color fontColor;
+    TTF_Font* font;
+    SDL_Surface* message;
+    char content[2];
+    SDL_Texture* indicTile;
+    SDL_Surface* flagImg;
+    SDL_Texture* flagTexture;
+} MSSDL_Ressources;
+
+typedef struct ScreenMS {
+    SCREEN_HEAD
+    Board oBoard;
+    MSSDL_Ressources SDLRessources;
+};
+
+
+void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
+    SDLRessources->tile.w = SDLRessources->tile.h = 50;
+    SDLRessources->font = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 16);
+    SDLRessources->flagImg = IMG_Load("img/good_flag.png");
+    SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
+}
+
 void tmpFuncGetData(int* iGridLength, int* iDifficulty);
 void tmpFuncGetControlMode(char* cZQSDControl);
 
-void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer);
+void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources);
 void eventHandler(SDL_Event* event, Board* oBoard);
 
 int main(int argc, char* argv[])
@@ -26,28 +61,29 @@ int main(int argc, char* argv[])
     int iGridLength, iDifficulty; //,iMinesAmount;
     tmpFuncGetData(&iGridLength, &iDifficulty);//,&iMinesAmount);
 
-    Board oBoard;
-    construct(&oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty /2));
+    ScreenMS oScreen = { MINESWEEPER };
+    construct(&oScreen.oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty / 2));
     
     SDL_Window* window;
     SDL_Renderer* renderer;
     TTF_Init();
-    window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
+    loadMSSDLRessources(&oScreen.SDLRessources, renderer);
 
 
-    while (!isGameOver(&oBoard, oBoard.iCursorPosition[0], oBoard.iCursorPosition[1])) {
+    while (!isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1])) {
         //EVENTS
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            eventHandler(&event, &oBoard);
+            eventHandler(&event, &oScreen.oBoard);
         }
 
         //DISPLAY
-        displayUI(&oBoard, window, renderer);
+        displayUI(&oScreen.oBoard, window, renderer, &oScreen.SDLRessources);
     }
 
-    if (isGameOver(&oBoard, oBoard.iCursorPosition[0], oBoard.iCursorPosition[1]) == 1) {
+    if (isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1]) == 1) {
         printf("You Lost");
     }
     else {
@@ -58,47 +94,16 @@ int main(int argc, char* argv[])
 
 
 
-
-
-
-int running = 1;
-int isPlaying = 0;
-
-
-
-void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer) {
-
-
-    //SDL_WaitEvent(event);
-    //SDL_Delay(1000);//pause de 3 secondes
-
-    ////on libère tout
-
-    //TTF_CloseFont(vera);
-    ////SDL_DestroyTexture(indicTile);
-    //SDL_DestroyRenderer(renderer);
-    //SDL_DestroyWindow(window);
-    //TTF_Quit();
-    //SDL_Quit(); 
-    //SDL_FreeSurface(NULL);
-    SDL_Rect tile;
-    SDL_Color fontColor;
-    TTF_Font* vera = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 16);
-    SDL_Surface* message;
-    char content[2];
-    SDL_Texture* indicTile;
-    SDL_Surface* flagImg = IMG_Load("img/good_flag.png");
-    SDL_Texture* flagTexture = SDL_CreateTextureFromSurface(renderer, flagImg);
-
-    
+void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources) {
+    SDL_RenderClear(renderer);
 
     for (int i = 0; i < oBoard->iGridLength; i++) {
         for (int j = 0; j < oBoard->iGridLength; j++)
         {
 
-            tile = { j * 20, i * 20 , 20, 20 };//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
-            tile = { j * 20, i * 20 , 20, 20 };//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
-
+            ressources->tile.x = j * 50;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+            ressources->tile.y = i * 50;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+            
             if (oBoard->grid[i * oBoard->iGridLength + j].isFlag == 1) {
 
                 if ((i * oBoard->iGridLength + j) % 2 == 0) {
@@ -106,8 +111,8 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer) {
                 }
                 else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
 
-                SDL_RenderFillRect(renderer, &tile);
-                SDL_RenderCopy(renderer, flagTexture, NULL, &tile);
+                SDL_RenderFillRect(renderer, &ressources->tile);
+                SDL_RenderCopy(renderer, ressources->flagTexture, NULL, &ressources->tile);
 
 
             }
@@ -120,7 +125,7 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer) {
                 else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
 
 
-                SDL_RenderFillRect(renderer, &tile);
+                SDL_RenderFillRect(renderer, &ressources->tile);
 
 
             }
@@ -136,28 +141,27 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer) {
 
 
                 if (oBoard->grid[i * oBoard->iGridLength + j].iContent == 0) {
-                    SDL_GetRenderDrawColor(renderer, &fontColor.r, &fontColor.g, &fontColor.b, &fontColor.a);
+                    SDL_GetRenderDrawColor(renderer, &ressources->fontColor.r, &ressources->fontColor.g, &ressources->fontColor.b, &ressources->fontColor.a);
                 }
                 else if (oBoard->grid[i * oBoard->iGridLength + j].iContent == 1) {
-                    fontColor = { 66,147, 245, 255 };
+                    ressources->fontColor = { 66,147, 245, 255 };
                 }
                 else if (oBoard->grid[i * oBoard->iGridLength + j].iContent == 2) {
-                    fontColor = { 144, 66, 245, 255 };
+                    ressources->fontColor = { 144, 66, 245, 255 };
                 }
                 else if (oBoard->grid[i * oBoard->iGridLength + j].iContent >= 3) {
-                    fontColor = { 201, 8, 8, 255 };
+                    ressources->fontColor = { 201, 8, 8, 255 };
                 }
 
+                sprintf_s(ressources->content, "%d", oBoard->grid[i * oBoard->iGridLength + j].iContent);
+                SDL_RenderFillRect(renderer, &ressources->tile);
 
-                sprintf_s(content, "%d", oBoard->grid[i * oBoard->iGridLength + j].iContent);
-                SDL_RenderFillRect(renderer, &tile);
-                message = TTF_RenderText_Blended(vera, content, fontColor);
-                indicTile = SDL_CreateTextureFromSurface(renderer, message);
-                SDL_RenderCopy(renderer, indicTile, NULL, &tile);
+                ressources->message = TTF_RenderText_Blended(ressources->font, ressources->content, ressources->fontColor);
+                ressources->indicTile = SDL_CreateTextureFromSurface(renderer, ressources->message);
+                SDL_RenderCopy(renderer, ressources->indicTile, NULL, &ressources->tile);
             }
         }
     }
-
 
     SDL_RenderPresent(renderer);
 
@@ -171,8 +175,8 @@ void eventHandler(SDL_Event* event, Board* oBoard) {
     {
     case SDL_MOUSEBUTTONDOWN:
 
-        int x = floor(event->button.x / 20);
-        int y = floor(event->button.y / 20);
+        int x = floor(event->button.x / 50);
+        int y = floor(event->button.y / 50);
         if (event->button.button == 1 && isCoordInGrid(&oBoard->iGridLength, x, y)) {
             revealCase(oBoard, x, y);
         }
@@ -290,3 +294,20 @@ Write your code in this editor and press "Run" button to compile and execute it.
 //
 //    return 0;
 //}
+
+
+
+//initMenu -> initButton
+//            placeButton
+//            x,y to button
+//
+//while handleEvents ->
+//if button->isClicked(Button) {
+//    button->callback()
+//    }
+//
+//isClickedRectBox
+//
+//isClickedRoundBoxx, y, width, height, callback, display, int isClicked(x, y)
+
+
