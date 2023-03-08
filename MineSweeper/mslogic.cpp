@@ -5,7 +5,7 @@
 #include "headers\mslogic.h"
 #include "headers\msutils.h"
 
-void construct(Board* oBoard, int iGridLength, int iMinesAmount) {
+void constructMSBoard(Board* oBoard, int iGridLength, int iMinesAmount) {
     oBoard->iGridLength = iGridLength;
     oBoard->grid = (Case*)malloc(sizeof(Case) * oBoard->iGridLength * oBoard->iGridLength);
     oBoard->iMinesAmount = iMinesAmount;

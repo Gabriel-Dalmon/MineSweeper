@@ -22,13 +22,13 @@
 
 typedef struct MainScreen {
     void* activeScreen;
-    SDL_Window* sdlWindow;
-    SDL_Renderer* sdlRenderer;
-    void (*displayScreen)(void* thisScreen, SDL_Window* window, SDL_Renderer* renderer,...);
-    void (*eventsHandler)(void* thisScreen, SDL_Window* window, SDL_Event* event,...);
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    void (*displayScreen)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
+    void (*eventsHandler)(MainScreen* oMainScreen, SDL_Event*);
 };
 
-typedef struct MSSDL_Ressources {
+typedef struct MSSDLRessources {
     SDL_Rect tile;
     SDL_Color fontColor;
     TTF_Font* font;
@@ -46,7 +46,6 @@ typedef struct ScreenMS {
 };
 
 typedef struct ScreenMenu {
-    MenuSDL_Ressources SDLRessources;
 };
 
 
@@ -61,36 +60,30 @@ void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer
 void tmpFuncGetData(int* iGridLength, int* iDifficulty);
 void tmpFuncGetControlMode(char* cZQSDControl);
 
-void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources);
+void displayMSGame(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources);
 void eventHandler(SDL_Event* event, SDL_Window* window, Board* oBoard);
+
+void switchToMSGame(MainScreen* oMainScreen);
 
 int main(int argc, char* argv[])
 {
+    TTF_Init();
     int isPlaying = 1;
     int iGridLength, iDifficulty; //,iMinesAmount;
     tmpFuncGetData(&iGridLength, &iDifficulty);//,&iMinesAmount);
 
     MainScreen oMainScreen;
     constructMainScreen(&oMainScreen);
-    switchToMainMenu(&oMainScreen);
-
-    construct(&oScreen.oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty / 2));
-    
-    
-
-    loadMSSDLRessources(&oScreen.SDLRessources, renderer);
+    switchToMSGame(&oMainScreen);    
 
     SDL_Event event;
-
     while (!isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1])) {
         //EVENTS
         while (SDL_PollEvent(&event)) {
-            
                 MainScreen.eventHandler(&event, window, &oScreen.oBoard);
         }
         //DISPLAY
             displayUI(&oScreen.oBoard, window, renderer, &oScreen.SDLRessources);
-        
     }
 
     if (isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1]) == 1) {
@@ -103,40 +96,66 @@ int main(int argc, char* argv[])
 }
 
 void constructMainScreen(MainScreen* oMainScreen) {
-    TTF_Init();
-    oMainScreen->sdlWindow = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SDL_WINDOW_RESIZABLE);
-    oMainScreen->sdlRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    oMainScreen->window = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SDL_WINDOW_RESIZABLE);
+    oMainScreen->renderer = SDL_CreateRenderer(oMainScreen->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 }
 
 void switchToMainMenu(MainScreen* oMainScreen) {
-    oMainScreen->Screen = constructMainMenu();
-    oMainScreen->displayScreen = displayMainMenu(void* activeScreen, SDL_Window);
-    oMainScreen->eventsHandler = mainMenuEventsHandler(void*);
+    oMainScreen->activeScreen = constructScreenMainMenu();
+    oMainScreen->displayScreen = displayMainMenu;
+    oMainScreen->eventsHandler = mainMenuEventsHandler;
 }
 
-ScreenMenu* constructMainMenu() {
+ScreenMenu* constructScreenMainMenu() {
     ScreenMenu oScreenMenu;
     return &oScreenMenu;
 }
 
 
-void mainMenuEventsHandler(SDL_Event* event, ) {
 
+ScreenMS* constructScreenMS(SDL_Renderer* renderer) {
+    ScreenMS oScreenMS;
+    
+    int iGridLength = 15; 
+    int iDifficulty = 1;
+    int iMinesAmount = round(iGridLength * iGridLength / (6 / iDifficulty) / 2);
+    constructMSBoard(&oScreenMS.oBoard, iGridLength, iMinesAmount);
+
+    loadMSSDLRessources(&oScreenMS.SDLRessources, renderer);
+
+    return &oScreenMS;
 }
 
-void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources) {
-    SDL_RenderClear(renderer);    
-    int sizeWedged = oBoard->iGridLength;
+void switchToMSGame(MainScreen* oMainScreen) {
+    oMainScreen->activeScreen = constructScreenMS();
+    oMainScreen->displayScreen = displayMSGame;
+    oMainScreen->eventsHandler = MSGameEventsHandler;
+}
+
+
+/**
+* @param void* activeScreen, contains SDLRessources & Board
+* 
+*/
+void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
+
+    ScreenMS* pGameScreen = (ScreenMS*)activeScreen;
+
+    Board* pBoard = &pGameScreen->oBoard;
+    MSSDLRessources* pRessources = &pGameScreen->SDLRessources;
+    int* iGridLength = &pBoard->iGridLength;
+
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
 
 
-    for (int iRow = 0; iRow < oBoard->iGridLength; iRow++) {
-        for (int iCol = 0; iCol < oBoard->iGridLength; iCol++)
-        {
+    SDL_RenderClear(renderer);
 
-            ressources->tile.x = iCol * 50 + winWidth/2 - (50 * sizeWedged)/2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
-            ressources->tile.y = iRow * 50 + winHeight / 2 - (50 * sizeWedged) / 2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+    for (int iRow = 0; iRow < *iGridLength; iRow++) {
+        for (int iCol = 0; iCol < *iGridLength; iCol++)
+        {
+            pRessources->tile.x = iCol * 50 + winWidth/2 - (50 * *iGridLength)/2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+            pRessources->tile.y = iRow * 50 + winHeight / 2 - (50 * *iGridLength) / 2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
             
             if (oBoard->grid[iRow * oBoard->iGridLength + iCol].isFlag == 1) {
 
@@ -145,7 +164,7 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_
                 }
                 else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
 
-                SDL_RenderFillRect(renderer, &ressources->tile);
+                SDL_RenderFillRect(renderer, &pRessources->tile);
                 SDL_RenderCopy(renderer, ressources->flagTexture, NULL, &ressources->tile);
 
 
@@ -205,8 +224,7 @@ void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_
 
 }
 
-
-void eventHandler(SDL_Event* event, SDL_Window* window, Board* oBoard) {
+void MSGameEventsHandler(SDL_Event* event, SDL_Window* window) {
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
 
@@ -269,75 +287,6 @@ void tmpFuncGetControlMode(char* cZQSDControl) {
     }
 }
 
-/******************************************************************************
-
-                            Online C Compiler.
-                Code, Compile, Run and Debug C program online.
-Write your code in this editor and press "Run" button to compile and execute it.
-
-*******************************************************************************/
-
-//#include <stdio.h>
-//
-//enum shapes { CIRCLE, RECTANGLE, SQUARE };
-//
-//// #define SCREEN_HEAD                 \
-////         int i;                      \
-////         enum shapes type;           \
-////         char name[20]               \
-////         double (*area)(void* this)  \
-////         double (*perimeter)(void* this)  \
-//
-//typedef struct Square {
-//    int id;
-//    enum shapes type;
-//    char name[20];
-//    double (*area)(void* this);
-//    double (*perimeter)(void* this);
-//    double s;
-//} Square;
-//
-//double s_area(void* this) {
-//    Square* me = (Square*)this;
-//    return me->s * me->s;
-//}
-//
-//double s_perimeter(void* this) {
-//    Square* me = (Square*)this;
-//    return me->s * 4.0;
-//}
-//
-//typedef struct Circle {
-//    int id;
-//    enum shapes type;
-//    char name[20];
-//    double (*area)(void* this);
-//    double (*perimeter)(void* this);
-//    double r;
-//} Circle;
-//
-//double c_area(void* this) {
-//    Circle* me = (Circle*)this;
-//    return me->r * me->r * 3.14;
-//}
-//
-//double c_perimeter(void* this) {
-//    Circle* me = (Circle*)this;
-//    return 2 * me->r * 3.14;
-//}
-//
-//
-//int main()
-//{
-//
-//    Square square = { 1, SQUARE, "square", &s_area, &s_perimeter, 2 };
-//    Circle circle = { 2, CIRCLE, "circle", &c_area, &c_perimeter,4 };
-//    printf("Hello World\n");
-//    printf("Square : id=%d, type=%d, name=%s, area=%.1f, perimeter=%.1f\n", square.id, square.type, square.name, square.area(&square), square.perimeter(&square));
-//    printf("Circle : id=%d, type=%d, name=%s, area=%.1f, perimeter=%.1f\n", circle.id, circle.type, circle.name, circle.area(&circle), circle.perimeter(&circle));
-//
-//    return 0;
-//}
 
 
 
