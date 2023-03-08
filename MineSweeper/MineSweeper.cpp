@@ -87,7 +87,7 @@ void controlMenu(SDL_Event* event, MMado* menu, GMado* toChange);
 void initMenu(MMado* menu);
 void printRectBtn(Button* button, SDL_Renderer* renderer);
 void goToGameAdress(void* smth, ...);
-void goToMenuAdress(GMado* game, MMado* menu, MMado* activeOne);
+void goToMenuAdress(void* smth, ...);//MMado* menu, MMado* activeOne, GMado* game)
 int rectIsClicked(int x, int y, Button* button);
 
 
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 
 
 
-    SDL_Window* window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 600, SDL_WINDOW_RESIZABLE);
+    SDL_Window* window = SDL_CreateWindow("Une fenetre SDL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SDL_WINDOW_RESIZABLE);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
 
 
@@ -153,6 +153,15 @@ int main(int argc, char* argv[])
 
     int running = 1;
     game.active = 0;
+
+    SDL_Rect shape;
+    SDL_Texture* wallpaper;
+    SDL_Surface* background = IMG_Load("img/binaryBG.gif");
+
+    shape = { 0, 0 , GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) };
+    SDL_RenderFillRect(mainMenu.renderer, &shape);
+    wallpaper = SDL_CreateTextureFromSurface(mainMenu.renderer, background);
+    SDL_RenderCopy(mainMenu.renderer, wallpaper, NULL, &shape);
 
 
 
@@ -420,12 +429,20 @@ void goToGameAdress(void* smth, ...) {//plante netre ok1 et 2
     toChange = game;
     game->active = 1; //soucis ici
     printf("ok2");
-    //activeOne = game;
 }
 
-void goToMenuAdress(GMado* game, MMado* menu, MMado* activeOne) {
-    game->active = 0;
-    activeOne = menu;
+//pas encore testé
+void goToMenuAdress(void* smth, ...) {//GMado* game, MMado* menu, MMado* activeOne) {
+    printf("ok1");
+    va_list args;
+    va_start(args, smth);
+    MMado* menu = va_arg(args, MMado*);
+    MMado* toChange = va_arg(args, MMado*);
+    GMado* game = va_arg(args, GMado*);
+    toChange = menu;
+    va_end(args);
+    game->active = 1;
+    printf("ok2");
 }
 
 
