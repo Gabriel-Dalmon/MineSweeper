@@ -441,7 +441,7 @@ void goToMenuAdress(void* smth, ...) {//GMado* game, MMado* menu, MMado* activeO
     GMado* game = va_arg(args, GMado*);
     toChange = menu;
     va_end(args);
-    game->active = 1;
+    game->active = 0;
     printf("ok2");
 }
 
