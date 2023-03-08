@@ -46,7 +46,33 @@ typedef struct ScreenMS {
 };
 
 typedef struct ScreenMenu {
+    MenuSDL_Ressources SDLRessources;
 };
+
+
+typedef struct Button {
+    int height;
+    int width;
+    int positionX;
+    int positionY;
+    const char* text;
+    int(*isClicked)(int x, int y, Button* button);
+    void(*action)(void* something, ...);
+    void(*shape)(Button* button, SDL_Renderer* renderer);
+}Button;
+
+
+typedef struct MenuSDL_Ressources {
+    SDL_Rect tile;
+    SDL_Color fontColor;
+    TTF_Font* font;
+    SDL_Surface* message;
+    char content[2];
+    SDL_Texture* indicTile;
+    SDL_Surface* flagImg;
+    SDL_Texture* flagTexture;
+} MSSDL_Ressources;
+
 
 
 
@@ -58,12 +84,17 @@ void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer
 }
 
 void tmpFuncGetData(int* iGridLength, int* iDifficulty);
-void tmpFuncGetControlMode(char* cZQSDControl);
 
 void displayMSGame(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources);
 void eventHandler(SDL_Event* event, SDL_Window* window, Board* oBoard);
 
 void switchToMSGame(MainScreen* oMainScreen);
+
+void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event);
+
+
+void initMenu(ScreenMenu* menu);
+
 
 int main(int argc, char* argv[])
 {
@@ -71,6 +102,18 @@ int main(int argc, char* argv[])
     int isPlaying = 1;
     int iGridLength, iDifficulty; //,iMinesAmount;
     tmpFuncGetData(&iGridLength, &iDifficulty);//,&iMinesAmount);
+
+
+
+    Button play;
+    play.width = 250;
+    play.height = 75;
+    play.text = "DIV";
+    play.shape = printRectBtn;
+    play.isClicked = rectIsClicked;
+    play.action = goToGameAdress;
+
+
 
     MainScreen oMainScreen;
     constructMainScreen(&oMainScreen);
@@ -108,7 +151,75 @@ void switchToMainMenu(MainScreen* oMainScreen) {
 
 ScreenMenu* constructScreenMainMenu() {
     ScreenMenu oScreenMenu;
+    //assigniation de la liste des boutons
+    initMenu(&oScreenMenu);
     return &oScreenMenu;
+}
+
+void initMenu(ScreenMenu* menu) {
+    int relativY = GetSystemMetrics(SM_CYSCREEN) / 4;
+    for (int i = 0; i < menu->nbButtons; i++) {//sizeof(menu->buttons) / sizeof(Button)
+        menu->buttons[i].positionX = GetSystemMetrics(SM_CXSCREEN) / 2 - menu->buttons[i].width;
+        menu->buttons[i].positionY = relativY;
+        relativY += menu->buttons[i].height + 150;
+    }
+}
+
+
+void printRectBtn(Button* button, SDL_Renderer* renderer) {
+    SDL_Rect shape;
+    TTF_Font* vera = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 128);
+    SDL_Surface* message;
+    SDL_Texture* indicTile;
+
+
+    shape = { button->positionX, button->positionY , button->width, button->height };
+    SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+    SDL_RenderFillRect(renderer, &shape);
+    message = TTF_RenderText_Blended(vera, button->text, { 201, 8, 8, 255 });
+    indicTile = SDL_CreateTextureFromSurface(renderer, message);
+    SDL_RenderCopy(renderer, indicTile, NULL, &shape);
+}
+
+int rectIsClicked(int x, int y, Button* button) {
+    if (button->positionX < x < button->positionX + button->width && button->positionY < y < button->positionY + button->height) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+
+void displayMenu(MainScreen* menu) {
+
+    ScreenMenu* activeMenu = (ScreenMenu*)menu->activeScreen;
+    for (int i = 0; i < activeMenu->nbButtons; i++) {
+        activeMenu->buttons[i].shape(&activeMenu->buttons[i], menu->sdlRenderer);
+    }
+
+    SDL_RenderPresent(menu->sdlRenderer);
+}
+
+void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
+    switch (event->type)
+    {
+    case SDL_MOUSEBUTTONDOWN:
+
+        ScreenMenu* menu = (ScreenMenu*)mainMenu->activeScreen;
+
+        int x = floor(event->button.x);
+        int y = floor(event->button.y);
+
+        if (event->button.button == 1) {
+            for (int i = 0; i < menu->nbButtons; i++) {
+                if (menu->buttons[i].isClicked(x, y, menu->buttons) == 1) {
+                    menu->buttons[i].action(&mainMenu);
+                }
+            }
+        }
+        break;
+    }
 }
 
 
@@ -275,17 +386,7 @@ void tmpFuncGetData(int* iGridLength, int* iDifficulty) {
     //}
 }
 
-void tmpFuncGetControlMode(char* cZQSDControl) {
-    printf("Do you want to play with Z/Q/S/D controls ? (y/n) : ");
-    clearSTDIN();
-    scanf_s("%c", cZQSDControl);
-    while (*cZQSDControl != 'y' && *cZQSDControl != 'n')
-    {
-        printf("Please enter \"y\" for Yes or \"n\" for No :");
-        clearSTDIN();
-        scanf_s("%c", cZQSDControl);
-    }
-}
+
 
 
 
