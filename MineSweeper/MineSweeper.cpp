@@ -46,8 +46,36 @@ typedef struct ScreenMS {
 };
 
 typedef struct ScreenMenu {
+    Button* buttons;//on a une liste de boutons avec leurs caracteristiques et MenuMado va devoir les afficher
+    int nbButtons;
     MenuSDL_Ressources SDLRessources;
 };
+
+
+typedef struct Button {
+    int height;
+    int width;
+    int positionX;
+    int positionY;
+    const char* text;
+    void* adress;
+    int(*isClicked)(int x, int y, Button* button);
+    void(*control)(void* something, ...);
+    void(*print)(Button* button, SDL_Renderer* renderer);
+}Button;
+
+
+typedef struct MenuSDL_Ressources {
+    SDL_Rect tile;
+    SDL_Color fontColor;
+    TTF_Font* font;
+    SDL_Surface* message;
+    char content[2];
+    SDL_Texture* indicTile;
+    SDL_Surface* flagImg;
+    SDL_Texture* flagTexture;
+} MSSDL_Ressources;
+
 
 
 
