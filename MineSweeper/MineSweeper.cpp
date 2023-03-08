@@ -15,14 +15,18 @@
 #include "headers\mslogic.h"
 #include "headers\msutils.h"
 
-enum SCREEN_TYPES {MAINMENU, MINESWEEPER};
 
 #define SCREEN_HEAD                            \
-        enum SCREEN_TYPES type; \
         void (*displayScreen)(void* this_t);    \
         void (*eventsHandler)(void* this_t);    \
 
-
+typedef struct MainScreen {
+    void* activeScreen;
+    SDL_Window* sdlWindow;
+    SDL_Renderer* sdlRenderer;
+    void (*displayScreen)(void* thisScreen, SDL_Window* window, SDL_Renderer* renderer,...);
+    void (*eventsHandler)(void* thisScreen, SDL_Window* window, SDL_Event* event,...);
+};
 
 typedef struct MSSDL_Ressources {
     SDL_Rect tile;
@@ -41,10 +45,15 @@ typedef struct ScreenMS {
     MSSDL_Ressources SDLRessources;
 };
 
+typedef struct ScreenMenu {
+    MenuSDL_Ressources SDLRessources;
+};
+
+
 
 void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
     SDLRessources->tile.w = SDLRessources->tile.h = 50;
-    SDLRessources->font = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 16);
+    SDLRessources->font = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 96);
     SDLRessources->flagImg = IMG_Load("img/good_flag.png");
     SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
 }
@@ -61,14 +70,14 @@ int main(int argc, char* argv[])
     int iGridLength, iDifficulty; //,iMinesAmount;
     tmpFuncGetData(&iGridLength, &iDifficulty);//,&iMinesAmount);
 
-    ScreenMS oScreen = { MINESWEEPER };
+    MainScreen oMainScreen;
+    constructMainScreen(&oMainScreen);
+    switchToMainMenu(&oMainScreen);
+
     construct(&oScreen.oBoard, iGridLength, round(iGridLength * iGridLength / iDifficulty / 2));
     
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    TTF_Init();
-    window = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SDL_WINDOW_RESIZABLE);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); // Création du renderer
+    
+
     loadMSSDLRessources(&oScreen.SDLRessources, renderer);
 
     SDL_Event event;
@@ -77,7 +86,7 @@ int main(int argc, char* argv[])
         //EVENTS
         while (SDL_PollEvent(&event)) {
             
-                eventHandler(&event, window, &oScreen.oBoard);
+                MainScreen.eventHandler(&event, window, &oScreen.oBoard);
         }
         //DISPLAY
             displayUI(&oScreen.oBoard, window, renderer, &oScreen.SDLRessources);
@@ -93,7 +102,27 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+void constructMainScreen(MainScreen* oMainScreen) {
+    TTF_Init();
+    oMainScreen->sdlWindow = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SDL_WINDOW_RESIZABLE);
+    oMainScreen->sdlRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+}
 
+void switchToMainMenu(MainScreen* oMainScreen) {
+    oMainScreen->Screen = constructMainMenu();
+    oMainScreen->displayScreen = displayMainMenu(void* activeScreen, SDL_Window);
+    oMainScreen->eventsHandler = mainMenuEventsHandler(void*);
+}
+
+ScreenMenu* constructMainMenu() {
+    ScreenMenu oScreenMenu;
+    return &oScreenMenu;
+}
+
+
+void mainMenuEventsHandler(SDL_Event* event, ) {
+
+}
 
 void displayUI(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources) {
     SDL_RenderClear(renderer);    
