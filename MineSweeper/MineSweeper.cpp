@@ -47,6 +47,8 @@ typedef struct ScreenMS {
 
 typedef struct ScreenMenu {
     MenuSDL_Ressources SDLRessources;
+    Button* buttons; //on a une liste de boutons avec leurs caracteristiques et MenuMado va devoir les afficher
+    int nbButtons;
 };
 
 
@@ -57,7 +59,7 @@ typedef struct Button {
     int positionY;
     const char* text;
     int(*isClicked)(int x, int y, Button* button);
-    void(*action)(void* something, ...);
+    void(*action)(MainScreen* oMainScreen);
     void(*shape)(Button* button, SDL_Renderer* renderer);
 }Button;
 
@@ -111,7 +113,7 @@ int main(int argc, char* argv[])
     play.text = "DIV";
     play.shape = printRectBtn;
     play.isClicked = rectIsClicked;
-    play.action = goToGameAdress;
+    play.action = switchToMSGame;
 
 
 
@@ -123,10 +125,10 @@ int main(int argc, char* argv[])
     while (!isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1])) {
         //EVENTS
         while (SDL_PollEvent(&event)) {
-                MainScreen.eventHandler(&event, window, &oScreen.oBoard);
+            oMainScreen.eventsHandler(&oScreen.oBoard , &event);
         }
         //DISPLAY
-            displayUI(&oScreen.oBoard, window, renderer, &oScreen.SDLRessources);
+        displayMSGame(&oScreen.oBoard, window, renderer, &oScreen.SDLRessources);
     }
 
     if (isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1]) == 1) {
@@ -195,10 +197,10 @@ void displayMenu(MainScreen* menu) {
 
     ScreenMenu* activeMenu = (ScreenMenu*)menu->activeScreen;
     for (int i = 0; i < activeMenu->nbButtons; i++) {
-        activeMenu->buttons[i].shape(&activeMenu->buttons[i], menu->sdlRenderer);
+        activeMenu->buttons[i].shape(&activeMenu->buttons[i], menu->renderer);
     }
 
-    SDL_RenderPresent(menu->sdlRenderer);
+    SDL_RenderPresent(menu->renderer);
 }
 
 void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
@@ -238,7 +240,7 @@ ScreenMS* constructScreenMS(SDL_Renderer* renderer) {
 }
 
 void switchToMSGame(MainScreen* oMainScreen) {
-    oMainScreen->activeScreen = constructScreenMS();
+    oMainScreen->activeScreen = constructScreenMS(oMainScreen->renderer);
     oMainScreen->displayScreen = displayMSGame;
     oMainScreen->eventsHandler = MSGameEventsHandler;
 }
@@ -335,9 +337,9 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
 
 }
 
-void MSGameEventsHandler(SDL_Event* event, SDL_Window* window) {
+void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
     int winWidth, winHeight;
-    SDL_GetWindowSize(window, &winWidth, &winHeight);
+    SDL_GetWindowSize(oMainScreen->window, &winWidth, &winHeight);
 
     switch (event->type)
     {
