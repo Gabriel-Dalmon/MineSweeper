@@ -15,16 +15,6 @@
 #include "headers\mslogic.h"
 #include "headers\msutils.h"
 
-typedef struct MainScreen {
-    void* activeScreen;
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    void (*displayScreen)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
-    void (*eventsHandler)(MainScreen* oMainScreen, SDL_Event* events);
-} MainScreen;
-
-void constructMainScreen(MainScreen* oMainScreen);
-
 typedef struct MSSDL_Ressources {
     SDL_Rect tile;
     SDL_Color fontColor;
@@ -38,6 +28,7 @@ typedef struct MSSDL_Ressources {
 
 typedef struct ScreenMS {
     Board oBoard;
+    Menu UIMenu;
     MSSDL_Ressources SDLRessources;
 } ScreenMS;
 
@@ -46,6 +37,7 @@ void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer
 void switchToMSGame(MainScreen* oMainScreen);
 void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
 void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event);
+
 
 typedef struct MenuSDL_Ressources {
     SDL_Rect tile;
@@ -69,26 +61,36 @@ typedef struct Button {
     void(*shape)(Button* button, SDL_Renderer* renderer);
 }Button;
 
-typedef struct ScreenMenu {
+typedef struct Menu {
+    char* title;
     MenuSDL_Ressources SDLRessources;
     Button* buttons; //on a une liste de boutons avec leurs caracteristiques et MenuMado va devoir les afficher
     int nbButtons;
-} ScreenMenu;
+} Menu;
+
+typedef struct ScreenMSDiffSelectMenu {
+    Menu oMenu;
+    MenuSDL_Ressources SDLRessources;
+} ScreenMS;
+
+void constructScreenMSDiffSelectMenu(ScreenMSDiffSelectMenu* pScreenMS, SDL_Renderer* renderer);
+void loadMenuSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
+void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
 
 
 
+typedef struct MainScreen {
+    void* activeScreen;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    void (*displayScreen)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
+    void (*eventsHandler)(MainScreen* oMainScreen, SDL_Event* events);
+} MainScreen;
 
-
-
-
-void tmpFuncGetData(int* iGridLength, int* iDifficulty);
-
-void switchToMSGame(MainScreen* oMainScreen);
+void constructMainScreen(MainScreen* oMainScreen);
 
 void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event);
-
-
-void initMenu(ScreenMenu* menu);
+void constructMenu(Menu* menu);
 
 
 int main(int argc, char* argv[])
@@ -105,7 +107,7 @@ int main(int argc, char* argv[])
 
     MainScreen oMainScreen;
     constructMainScreen(&oMainScreen);
-    switchToMSGame(&oMainScreen);    
+    switchToMSGame(&oMainScreen);
 
     SDL_Event event;
     while (1) {
@@ -114,37 +116,32 @@ int main(int argc, char* argv[])
             oMainScreen.eventsHandler(&oMainScreen, &event);
         }
         //DISPLAY
-        oMainScreen.displayScreen(&oMainScreen.activeScreen, oMainScreen.window, oMainScreen.renderer);
+        oMainScreen.displayScreen(oMainScreen.activeScreen, oMainScreen.window, oMainScreen.renderer);
     }
     return 0;
 }
 
 
-void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer) {
-    ScreenMS oScreenMS;
-    
+void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer) {    
     int iGridLength = 15; 
     int iDifficulty = 1;
     int iMinesAmount = round(iGridLength * iGridLength / (6 / iDifficulty) / 2);
-    constructMSBoard(&oScreenMS.oBoard, iGridLength, iMinesAmount);
+    constructMSBoard(&pScreenMS->oBoard, iGridLength, iMinesAmount);
 
-    loadMSSDLRessources(&oScreenMS.SDLRessources, renderer);
+    loadMSSDLRessources(&pScreenMS->SDLRessources, renderer);
 }
-
 void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
     SDLRessources->tile.w = SDLRessources->tile.h = 50;
     SDLRessources->font = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 96);
     SDLRessources->flagImg = IMG_Load("img/good_flag.png");
     SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
 }
-
-
 void switchToMSGame(MainScreen* oMainScreen) {
-    constructScreenMS((ScreenMS*)oMainScreen->activeScreen,oMainScreen->renderer);
+    oMainScreen->activeScreen = realloc(oMainScreen->activeScreen, sizeof(ScreenMS));
+    constructScreenMS((ScreenMS*)oMainScreen->activeScreen, oMainScreen->renderer);
     oMainScreen->displayScreen = displayMSGame;
     oMainScreen->eventsHandler = MSGameEventsHandler;
 }
-
 /**
 * @param void* activeScreen, contains SDLRessources & Board
 * 
@@ -231,7 +228,6 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
 
     SDL_RenderPresent(renderer);
 }
-
 void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
     Board* pBoard = &((ScreenMS*)oMainScreen->activeScreen)->oBoard;
     int* iGridLength = &pBoard->iGridLength;
@@ -259,35 +255,29 @@ void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
     }
 }
 
+void constructScreenMSDiffSelectMenu(ScreenMSDiffSelectMenu* pActiveScreen, SDL_Renderer* renderer) {
+    constructMenu(&pActiveScreen->oMenu);
+    loadMenuSDLRessources(pActiveScreen->oMenu.SDLRessources, renderer);
+}
 
+void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
 
 void constructMainScreen(MainScreen* oMainScreen) {
     oMainScreen->window = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SDL_WINDOW_RESIZABLE);
     oMainScreen->renderer = SDL_CreateRenderer(oMainScreen->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    oMainScreen->activeScreen = malloc(sizeof(int));
 }
 
-//void switchToMainMenu(MainScreen* oMainScreen) {
-//    oMainScreen->activeScreen = constructScreenMainMenu();
-//    oMainScreen->displayScreen = displayMainMenu;
-//    oMainScreen->eventsHandler = mainMenuEventsHandler;
-//}
-
-//ScreenMenu* constructScreenMainMenu() {
-//    ScreenMenu oScreenMenu;
-//    //assigniation de la liste des boutons
-//    initMenu(&oScreenMenu);
-//    return &oScreenMenu;
-//}
-
-void initMenu(ScreenMenu* menu) {
+void constructMenu(Menu* menu) {
     int relativY = GetSystemMetrics(SM_CYSCREEN) / 4;
-    for (int i = 0; i < menu->nbButtons; i++) {//sizeof(menu->buttons) / sizeof(Button)
+    for (int i = 0; i < menu->nbButtons; i++) {
         menu->buttons[i].positionX = GetSystemMetrics(SM_CXSCREEN) / 2 - menu->buttons[i].width;
         menu->buttons[i].positionY = relativY;
         relativY += menu->buttons[i].height + 150;
     }
 }
 
+void loadMenuSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
 
 void printRectBtn(Button* button, SDL_Renderer* renderer) {
     SDL_Rect shape;
@@ -347,33 +337,18 @@ void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
 
 
 
+//void switchToMainMenu(MainScreen* oMainScreen) {
+//    oMainScreen->activeScreen = constructScreenMainMenu();
+//    oMainScreen->displayScreen = displayMainMenu;
+//    oMainScreen->eventsHandler = mainMenuEventsHandler;
+//}
 
-
-void tmpFuncGetData(int* iGridLength, int* iDifficulty) {
-    printf("Enter the length of the grid: ");
-    getInput(iGridLength);
-    while (*iGridLength < 2) {
-        printf("The length of the grid has to be longer than 2: ");
-        getInput(iGridLength);
-    }
-
-    printf("1 = Easy, 2 = Normal, 3 = Hard\nChoose a difficulty: ");
-    getInput(iDifficulty);
-    while (*iDifficulty != 1 && *iDifficulty != 2 && *iDifficulty != 3)
-    {
-        printf("1 = Easy, 2 = Normal, 3 = Hard\nPlease enter an integer between 1/2/3: ");
-        getInput(iDifficulty);
-    }
-    *iDifficulty = 6 / *iDifficulty;
-
-    //printf("Enter the amount of mines present on the grid : ");
-    //getInput(&iMinesAmount);
-    //while (iMinesAmount >= iGridLength * iGridLength && iMinesAmount >= 1) {
-    //    printf("The mines amount has to be smaller than the amount of cases : ");
-    //    getInput(&iMinesAmount);
-    //}
-}
-
+//ScreenMenu* constructScreenMainMenu() {
+//    ScreenMenu oScreenMenu;
+//    //assigniation de la liste des boutons
+//    initMenu(&oScreenMenu);
+//    return &oScreenMenu;
+//}
 
 
 
