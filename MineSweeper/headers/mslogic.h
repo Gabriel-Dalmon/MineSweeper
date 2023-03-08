@@ -15,7 +15,7 @@ typedef struct Board {
     int iCursorPosition[2];
 } Board;
 
-void constructMSBoard(Board* oBoard, int iGridLength, int minesAmount);
+void constructMSBoard(Board* oBoard, int iGridLength, int iMinesAmount);
 void generateMines(Board* oBoard);
 
 

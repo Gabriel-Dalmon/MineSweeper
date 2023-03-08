@@ -15,20 +15,17 @@
 #include "headers\mslogic.h"
 #include "headers\msutils.h"
 
-
-#define SCREEN_HEAD                            \
-        void (*displayScreen)(void* this_t);    \
-        void (*eventsHandler)(void* this_t);    \
-
 typedef struct MainScreen {
     void* activeScreen;
     SDL_Window* window;
     SDL_Renderer* renderer;
     void (*displayScreen)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
-    void (*eventsHandler)(MainScreen* oMainScreen, SDL_Event*);
-};
+    void (*eventsHandler)(MainScreen* oMainScreen, SDL_Event* events);
+} MainScreen;
 
-typedef struct MSSDLRessources {
+void constructMainScreen(MainScreen* oMainScreen);
+
+typedef struct MSSDL_Ressources {
     SDL_Rect tile;
     SDL_Color fontColor;
     TTF_Font* font;
@@ -40,17 +37,26 @@ typedef struct MSSDLRessources {
 } MSSDL_Ressources;
 
 typedef struct ScreenMS {
-    SCREEN_HEAD
     Board oBoard;
     MSSDL_Ressources SDLRessources;
-};
+} ScreenMS;
 
-typedef struct ScreenMenu {
-    MenuSDL_Ressources SDLRessources;
-    Button* buttons; //on a une liste de boutons avec leurs caracteristiques et MenuMado va devoir les afficher
-    int nbButtons;
-};
+void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer);
+void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
+void switchToMSGame(MainScreen* oMainScreen);
+void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
+void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event);
 
+typedef struct MenuSDL_Ressources {
+    SDL_Rect tile;
+    SDL_Color fontColor;
+    TTF_Font* font;
+    SDL_Surface* message;
+    char content[2];
+    SDL_Texture* indicTile;
+    SDL_Surface* flagImg;
+    SDL_Texture* flagTexture;
+} MenuSDL_Ressources;
 
 typedef struct Button {
     int height;
@@ -63,32 +69,19 @@ typedef struct Button {
     void(*shape)(Button* button, SDL_Renderer* renderer);
 }Button;
 
-
-typedef struct MenuSDL_Ressources {
-    SDL_Rect tile;
-    SDL_Color fontColor;
-    TTF_Font* font;
-    SDL_Surface* message;
-    char content[2];
-    SDL_Texture* indicTile;
-    SDL_Surface* flagImg;
-    SDL_Texture* flagTexture;
-} MSSDL_Ressources;
+typedef struct ScreenMenu {
+    MenuSDL_Ressources SDLRessources;
+    Button* buttons; //on a une liste de boutons avec leurs caracteristiques et MenuMado va devoir les afficher
+    int nbButtons;
+} ScreenMenu;
 
 
 
 
-void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
-    SDLRessources->tile.w = SDLRessources->tile.h = 50;
-    SDLRessources->font = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 96);
-    SDLRessources->flagImg = IMG_Load("img/good_flag.png");
-    SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
-}
+
+
 
 void tmpFuncGetData(int* iGridLength, int* iDifficulty);
-
-void displayMSGame(Board* oBoard, SDL_Window* window, SDL_Renderer* renderer, MSSDL_Ressources* ressources);
-void eventHandler(SDL_Event* event, SDL_Window* window, Board* oBoard);
 
 void switchToMSGame(MainScreen* oMainScreen);
 
@@ -101,62 +94,190 @@ void initMenu(ScreenMenu* menu);
 int main(int argc, char* argv[])
 {
     TTF_Init();
-    int isPlaying = 1;
-    int iGridLength, iDifficulty; //,iMinesAmount;
-    tmpFuncGetData(&iGridLength, &iDifficulty);//,&iMinesAmount);
 
-
-
-    Button play;
-    play.width = 250;
-    play.height = 75;
-    play.text = "DIV";
-    play.shape = printRectBtn;
-    play.isClicked = rectIsClicked;
-    play.action = switchToMSGame;
-
-
+    //Button play;
+    //play.width = 250;
+    //play.height = 75;
+    //play.text = "DIV";
+    //play.shape = printRectBtn;
+    //play.isClicked = rectIsClicked;
+    //play.action = switchToMSGame;
 
     MainScreen oMainScreen;
     constructMainScreen(&oMainScreen);
     switchToMSGame(&oMainScreen);    
 
     SDL_Event event;
-    while (!isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1])) {
+    while (1) {
         //EVENTS
         while (SDL_PollEvent(&event)) {
-            oMainScreen.eventsHandler(&oScreen.oBoard , &event);
+            oMainScreen.eventsHandler(&oMainScreen, &event);
         }
         //DISPLAY
-        displayMSGame(&oScreen.oBoard, window, renderer, &oScreen.SDLRessources);
-    }
-
-    if (isGameOver(&oScreen.oBoard, oScreen.oBoard.iCursorPosition[0], oScreen.oBoard.iCursorPosition[1]) == 1) {
-        printf("You Lost");
-    }
-    else {
-        printf("You Won");
+        oMainScreen.displayScreen(&oMainScreen.activeScreen, oMainScreen.window, oMainScreen.renderer);
     }
     return 0;
 }
+
+
+void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer) {
+    ScreenMS oScreenMS;
+    
+    int iGridLength = 15; 
+    int iDifficulty = 1;
+    int iMinesAmount = round(iGridLength * iGridLength / (6 / iDifficulty) / 2);
+    constructMSBoard(&oScreenMS.oBoard, iGridLength, iMinesAmount);
+
+    loadMSSDLRessources(&oScreenMS.SDLRessources, renderer);
+}
+
+void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
+    SDLRessources->tile.w = SDLRessources->tile.h = 50;
+    SDLRessources->font = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 96);
+    SDLRessources->flagImg = IMG_Load("img/good_flag.png");
+    SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
+}
+
+
+void switchToMSGame(MainScreen* oMainScreen) {
+    constructScreenMS((ScreenMS*)oMainScreen->activeScreen,oMainScreen->renderer);
+    oMainScreen->displayScreen = displayMSGame;
+    oMainScreen->eventsHandler = MSGameEventsHandler;
+}
+
+/**
+* @param void* activeScreen, contains SDLRessources & Board
+* 
+*/
+void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
+
+    Board* pBoard = &((ScreenMS*)activeScreen)->oBoard;
+    MSSDL_Ressources* pRessources = &((ScreenMS*)activeScreen)->SDLRessources;
+    int* iGridLength = &pBoard->iGridLength;
+
+    int winWidth, winHeight;
+    SDL_GetWindowSize(window, &winWidth, &winHeight);
+
+
+    SDL_RenderClear(renderer);
+
+    for (int iRow = 0; iRow < *iGridLength; iRow++) {
+        for (int iCol = 0; iCol < *iGridLength; iCol++)
+        {
+            pRessources->tile.x = iCol * 50 + winWidth/2 - (50 * *iGridLength)/2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+            pRessources->tile.y = iRow * 50 + winHeight / 2 - (50 * *iGridLength) / 2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+            
+            if (pBoard->grid[iRow * *iGridLength + iCol].isFlag == 1) {
+
+                if ((iRow * pBoard->iGridLength + iCol) % 2 == 0) {
+                    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
+                }
+                else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
+
+                SDL_RenderFillRect(renderer, &pRessources->tile);
+                SDL_RenderCopy(renderer, pRessources->flagTexture, NULL, &pRessources->tile);
+
+
+            }
+            else if (pBoard->grid[iRow * *iGridLength + iCol].isVisible == 0) {
+
+
+                if ((iRow * *iGridLength + iCol) % 2 == 0) {
+                    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
+                }
+                else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
+
+
+                SDL_RenderFillRect(renderer, &pRessources->tile);
+
+
+            }
+            else if (pBoard->grid[iRow * pBoard->iGridLength + iCol].isVisible == 1) {
+
+
+                if ((iRow * *iGridLength + iCol) % 2 == 0) {
+                    SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
+                }
+                else {
+                    SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
+                }
+
+
+                if (pBoard->grid[iRow * pBoard->iGridLength + iCol].iContent == 0) {
+                    SDL_GetRenderDrawColor(renderer, &pRessources->fontColor.r, &pRessources->fontColor.g, &pRessources->fontColor.b, &pRessources->fontColor.a);
+                }
+                else if (pBoard->grid[iRow * pBoard->iGridLength + iCol].iContent == 1) {
+                    pRessources->fontColor = { 66,147, 245, 255 };
+                }
+                else if (pBoard->grid[iRow * pBoard->iGridLength + iCol].iContent == 2) {
+                    pRessources->fontColor = { 144, 66, 245, 255 };
+                }
+                else if (pBoard->grid[iRow * pBoard->iGridLength + iCol].iContent >= 3) {
+                    pRessources->fontColor = { 201, 8, 8, 255 };
+                }
+
+                sprintf_s(pRessources->content, "%d", pBoard->grid[iRow * pBoard->iGridLength + iCol].iContent);
+                SDL_RenderFillRect(renderer, &pRessources->tile);
+
+                pRessources->message = TTF_RenderText_Blended(pRessources->font, pRessources->content, pRessources->fontColor);
+                pRessources->indicTile = SDL_CreateTextureFromSurface(renderer, pRessources->message);
+                SDL_RenderCopy(renderer, pRessources->indicTile, NULL, &pRessources->tile);
+           
+                SDL_FreeSurface(pRessources->message);
+                SDL_DestroyTexture(pRessources->indicTile);
+            }
+        }
+    }
+
+    SDL_RenderPresent(renderer);
+}
+
+void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
+    Board* pBoard = &((ScreenMS*)oMainScreen->activeScreen)->oBoard;
+    int* iGridLength = &pBoard->iGridLength;
+    int winWidth, winHeight;
+    SDL_GetWindowSize(oMainScreen->window, &winWidth, &winHeight);
+
+    switch (event->type)
+    {
+    case SDL_MOUSEBUTTONDOWN:
+
+        int x = floor(event->button.x / 50);
+        int y = floor(event->button.y / 50);
+        int xCanva = floor((event->button.x - winWidth / 2 + (50 * pBoard->iGridLength) / 2) / 50);
+        int yCanva = floor((event->button.y - winHeight / 2 + (50 * pBoard->iGridLength) / 2) / 50);
+        printf("(%d|%d) - (%d|%d)", x, y, xCanva, yCanva);
+        if (event->button.button == 1 && isCoordInGrid(&pBoard->iGridLength, xCanva, yCanva)) {
+            revealCase(pBoard, xCanva, yCanva);
+            pBoard->iCursorPosition[0] = xCanva;
+            pBoard->iCursorPosition[1] = yCanva;
+        }
+        else if (event->button.button == 3 && isCoordInGrid(&pBoard->iGridLength, xCanva, yCanva)) {
+            setFlag(pBoard, xCanva, yCanva);
+        }
+        break;
+    }
+}
+
+
 
 void constructMainScreen(MainScreen* oMainScreen) {
     oMainScreen->window = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SDL_WINDOW_RESIZABLE);
     oMainScreen->renderer = SDL_CreateRenderer(oMainScreen->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 }
 
-void switchToMainMenu(MainScreen* oMainScreen) {
-    oMainScreen->activeScreen = constructScreenMainMenu();
-    oMainScreen->displayScreen = displayMainMenu;
-    oMainScreen->eventsHandler = mainMenuEventsHandler;
-}
+//void switchToMainMenu(MainScreen* oMainScreen) {
+//    oMainScreen->activeScreen = constructScreenMainMenu();
+//    oMainScreen->displayScreen = displayMainMenu;
+//    oMainScreen->eventsHandler = mainMenuEventsHandler;
+//}
 
-ScreenMenu* constructScreenMainMenu() {
-    ScreenMenu oScreenMenu;
-    //assigniation de la liste des boutons
-    initMenu(&oScreenMenu);
-    return &oScreenMenu;
-}
+//ScreenMenu* constructScreenMainMenu() {
+//    ScreenMenu oScreenMenu;
+//    //assigniation de la liste des boutons
+//    initMenu(&oScreenMenu);
+//    return &oScreenMenu;
+//}
 
 void initMenu(ScreenMenu* menu) {
     int relativY = GetSystemMetrics(SM_CYSCREEN) / 4;
@@ -216,7 +337,7 @@ void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
         if (event->button.button == 1) {
             for (int i = 0; i < menu->nbButtons; i++) {
                 if (menu->buttons[i].isClicked(x, y, menu->buttons) == 1) {
-                    menu->buttons[i].action(&mainMenu);
+                    menu->buttons[i].action(mainMenu);
                 }
             }
         }
@@ -226,141 +347,6 @@ void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
 
 
 
-ScreenMS* constructScreenMS(SDL_Renderer* renderer) {
-    ScreenMS oScreenMS;
-    
-    int iGridLength = 15; 
-    int iDifficulty = 1;
-    int iMinesAmount = round(iGridLength * iGridLength / (6 / iDifficulty) / 2);
-    constructMSBoard(&oScreenMS.oBoard, iGridLength, iMinesAmount);
-
-    loadMSSDLRessources(&oScreenMS.SDLRessources, renderer);
-
-    return &oScreenMS;
-}
-
-void switchToMSGame(MainScreen* oMainScreen) {
-    oMainScreen->activeScreen = constructScreenMS(oMainScreen->renderer);
-    oMainScreen->displayScreen = displayMSGame;
-    oMainScreen->eventsHandler = MSGameEventsHandler;
-}
-
-
-/**
-* @param void* activeScreen, contains SDLRessources & Board
-* 
-*/
-void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
-
-    ScreenMS* pGameScreen = (ScreenMS*)activeScreen;
-
-    Board* pBoard = &pGameScreen->oBoard;
-    MSSDLRessources* pRessources = &pGameScreen->SDLRessources;
-    int* iGridLength = &pBoard->iGridLength;
-
-    int winWidth, winHeight;
-    SDL_GetWindowSize(window, &winWidth, &winHeight);
-
-
-    SDL_RenderClear(renderer);
-
-    for (int iRow = 0; iRow < *iGridLength; iRow++) {
-        for (int iCol = 0; iCol < *iGridLength; iCol++)
-        {
-            pRessources->tile.x = iCol * 50 + winWidth/2 - (50 * *iGridLength)/2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
-            pRessources->tile.y = iRow * 50 + winHeight / 2 - (50 * *iGridLength) / 2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
-            
-            if (oBoard->grid[iRow * oBoard->iGridLength + iCol].isFlag == 1) {
-
-                if ((iRow * oBoard->iGridLength + iCol) % 2 == 0) {
-                    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
-                }
-                else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
-
-                SDL_RenderFillRect(renderer, &pRessources->tile);
-                SDL_RenderCopy(renderer, ressources->flagTexture, NULL, &ressources->tile);
-
-
-            }
-            else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].isVisible == 0) {
-
-
-                if ((iRow * sizeWedged + iCol) % 2 == 0) {
-                    SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
-                }
-                else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
-
-
-                SDL_RenderFillRect(renderer, &ressources->tile);
-
-
-            }
-            else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].isVisible == 1) {
-
-
-                if ((iRow * sizeWedged + iCol) % 2 == 0) {
-                    SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
-                }
-                else {
-                    SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
-                }
-
-
-                if (oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent == 0) {
-                    SDL_GetRenderDrawColor(renderer, &ressources->fontColor.r, &ressources->fontColor.g, &ressources->fontColor.b, &ressources->fontColor.a);
-                }
-                else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent == 1) {
-                    ressources->fontColor = { 66,147, 245, 255 };
-                }
-                else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent == 2) {
-                    ressources->fontColor = { 144, 66, 245, 255 };
-                }
-                else if (oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent >= 3) {
-                    ressources->fontColor = { 201, 8, 8, 255 };
-                }
-
-                sprintf_s(ressources->content, "%d", oBoard->grid[iRow * oBoard->iGridLength + iCol].iContent);
-                SDL_RenderFillRect(renderer, &ressources->tile);
-
-                ressources->message = TTF_RenderText_Blended(ressources->font, ressources->content, ressources->fontColor);
-                ressources->indicTile = SDL_CreateTextureFromSurface(renderer, ressources->message);
-                SDL_RenderCopy(renderer, ressources->indicTile, NULL, &ressources->tile);
-           
-                SDL_FreeSurface(ressources->message);
-                SDL_DestroyTexture(ressources->indicTile);
-            }
-        }
-    }
-
-    SDL_RenderPresent(renderer);
-
-
-}
-
-void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
-    int winWidth, winHeight;
-    SDL_GetWindowSize(oMainScreen->window, &winWidth, &winHeight);
-
-    switch (event->type)
-    {
-    case SDL_MOUSEBUTTONDOWN:
-
-        int x = floor(event->button.x / 50);
-        int y = floor(event->button.y / 50);
-        int xCanva = floor((event->button.x - winWidth / 2 + (50 * oBoard->iGridLength) / 2) / 50);
-        int yCanva = floor((event->button.y - winHeight / 2 + (50 * oBoard->iGridLength) / 2) / 50);
-        printf("(%d|%d) - (%d|%d)", x, y, xCanva, yCanva);
-        if (event->button.button == 1 && isCoordInGrid(&oBoard->iGridLength, xCanva, yCanva)) {
-            revealCase(oBoard, xCanva, yCanva);
-            oBoard->iCursorPosition[0] = xCanva;
-            oBoard->iCursorPosition[1] = yCanva;
-        }
-        else if (event->button.button == 3 && isCoordInGrid(&oBoard->iGridLength, xCanva, yCanva)) {
-            setFlag(oBoard, xCanva, yCanva);
-        }
-        break;
-    }
-}
 
 
 void tmpFuncGetData(int* iGridLength, int* iDifficulty) {
