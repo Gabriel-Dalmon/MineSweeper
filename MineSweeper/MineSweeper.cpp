@@ -71,10 +71,10 @@ typedef struct Menu {
 typedef struct ScreenMSDiffSelectMenu {
     Menu oMenu;
     MenuSDL_Ressources SDLRessources;
-} ScreenMS;
+} ScreenMSDiffSelectMenu;
 
 void constructScreenMSDiffSelectMenu(ScreenMSDiffSelectMenu* pScreenMS, SDL_Renderer* renderer);
-void loadMenuSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
+void loadMenuSDLRessources(MenuSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
 void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
 
 
@@ -136,6 +136,16 @@ void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer
     SDLRessources->flagImg = IMG_Load("img/good_flag.png");
     SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
 }
+
+void loadMenuSDLRessources(MenuSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
+    SDLRessources->tile.w = SDLRessources->tile.h = 50;
+    SDLRessources->font = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 96);
+    SDLRessources->flagImg = IMG_Load("img/good_flag.png");
+    SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
+}
+
+
+
 void switchToMSGame(MainScreen* oMainScreen) {
     oMainScreen->activeScreen = realloc(oMainScreen->activeScreen, sizeof(ScreenMS));
     constructScreenMS((ScreenMS*)oMainScreen->activeScreen, oMainScreen->renderer);
@@ -257,7 +267,7 @@ void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
 
 void constructScreenMSDiffSelectMenu(ScreenMSDiffSelectMenu* pActiveScreen, SDL_Renderer* renderer) {
     constructMenu(&pActiveScreen->oMenu);
-    loadMenuSDLRessources(pActiveScreen->oMenu.SDLRessources, renderer);
+    loadMenuSDLRessources(&pActiveScreen->oMenu.SDLRessources, renderer);
 }
 
 void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
@@ -306,7 +316,7 @@ int rectIsClicked(int x, int y, Button* button) {
 
 void displayMenu(MainScreen* menu) {
 
-    ScreenMenu* activeMenu = (ScreenMenu*)menu->activeScreen;
+    Menu* activeMenu = (Menu*)menu->activeScreen;
     for (int i = 0; i < activeMenu->nbButtons; i++) {
         activeMenu->buttons[i].shape(&activeMenu->buttons[i], menu->renderer);
     }
@@ -319,7 +329,7 @@ void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
     {
     case SDL_MOUSEBUTTONDOWN:
 
-        ScreenMenu* menu = (ScreenMenu*)mainMenu->activeScreen;
+        Menu* menu = (Menu*)mainMenu->activeScreen;
 
         int x = floor(event->button.x);
         int y = floor(event->button.y);
@@ -389,3 +399,4 @@ switchMadoToMenu : update main mado display, eventhandler with menu display, men
 
 
 */
+
