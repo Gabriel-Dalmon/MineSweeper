@@ -46,8 +46,8 @@ void constructScreenMSDiffSelectMenu(ScreenMSDiffSelectMenu* pScreenMS, SDL_Rend
 int main(int argc, char* argv[])
 {
     TTF_Init();
-    //Mix_Init(0x00000008);//on iinitialise au format mp3
-    //Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+    Mix_Init(0x00000008);//on iinitialise au format mp3
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
     
 
     MainScreen oMainScreen;
@@ -62,6 +62,7 @@ int main(int argc, char* argv[])
         }
         //DISPLAY
         oMainScreen.displayScreen(oMainScreen.activeScreen, oMainScreen.window, oMainScreen.renderer);
+        SDL_RenderPresent(oMainScreen.renderer);
     }
     return 0;
 }

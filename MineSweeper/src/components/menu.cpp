@@ -23,8 +23,6 @@ void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer)
     for (int i = 0; i < activeMenu->nbButtons; i++) {
         activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
     }
-
-    SDL_RenderPresent(renderer);
 }
 
 void printRectBtn(Button* button, SDL_Renderer* renderer) {
@@ -39,6 +37,8 @@ void printRectBtn(Button* button, SDL_Renderer* renderer) {
     message = TTF_RenderText_Blended(vera, button->text, { 201, 8, 8, 255 });
     indicTile = SDL_CreateTextureFromSurface(renderer, message);
     SDL_RenderCopy(renderer, indicTile, NULL, &rect);
+    SDL_FreeSurface(message);
+    SDL_DestroyTexture(indicTile);
 }
 
 int rectIsClicked(int x, int y, Button* button) {

@@ -101,8 +101,6 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
             }
         }
     }
-
-    SDL_RenderPresent(renderer);
 }
 
 void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
