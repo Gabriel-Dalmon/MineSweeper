@@ -106,7 +106,7 @@ void loadMenuSDLRessources(MenuSDL_Ressources* SDLRessources, SDL_Renderer* rend
 void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
 
 
-Menu* constructScreenMainMenu();
+void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer);
 
 void initMenu(Menu* menu);
 void switchToMainMenu(MainScreen* oMainScreen);
@@ -331,11 +331,21 @@ void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer)
 
     Menu* activeMenu = (Menu*)activeScreen;
     for (int i = 0; i < activeMenu->nbButtons; i++) {
+        printf("oe");//on arrive pas ici
         activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
     }
 
     SDL_RenderPresent(renderer);
 }
+
+
+
+
+
+
+
+
+
 
 void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
     switch (event->type)
@@ -361,12 +371,17 @@ void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
 
 
 void switchToMainMenu(MainScreen* oMainScreen) {
-    oMainScreen->activeScreen = constructScreenMainMenu();
+    oMainScreen->activeScreen = realloc(oMainScreen->activeScreen, sizeof(Menu));
+    constructScreenMainMenu((Menu*)oMainScreen->activeScreen, oMainScreen->renderer);
     oMainScreen->displayScreen = displayMenu;
     oMainScreen->eventsHandler = mainMenuEventsHandler;
 }
 
-Menu* constructScreenMainMenu() {
+
+
+
+
+void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer) {
     Menu oScreenMenu;
 
     //assigniation de la liste des boutons
@@ -381,8 +396,14 @@ Menu* constructScreenMainMenu() {
     oScreenMenu.nbButtons = 1;
     oScreenMenu.buttons = &play;
     initMenu(&oScreenMenu);
-    return &oScreenMenu;
+    
 }
+
+
+
+
+
+
 
 
 void initMenu(Menu* menu) {
