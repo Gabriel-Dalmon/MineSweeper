@@ -110,6 +110,7 @@ void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer);
 
 void initMenu(Menu* menu);
 void switchToMainMenu(MainScreen* oMainScreen);
+void loadMenuSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
 
 
 
@@ -120,7 +121,6 @@ int main(int argc, char* argv[])
     MainScreen oMainScreen;
     constructMainScreen(&oMainScreen);
     switchToMainMenu(&oMainScreen);
-    
 
     SDL_Event event;
     while (1) {
@@ -300,13 +300,14 @@ void constructMenu(Menu* menu) {
     }
 }
 
-void loadMenuSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
+
 
 void printRectBtn(Button* button, SDL_Renderer* renderer) {
     SDL_Rect rect;
     TTF_Font* vera = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 128);
     SDL_Surface* message;
     SDL_Texture* indicTile;
+    printf("ok");
 
 
     rect = { button->positionX, button->positionY , button->width, button->height };
@@ -328,11 +329,11 @@ int rectIsClicked(int x, int y, Button* button) {
 
 
 void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
-
     Menu* activeMenu = (Menu*)activeScreen;
     for (int i = 0; i < activeMenu->nbButtons; i++) {
-        printf("oe");//on arrive pas ici
+        printf("%d", activeMenu->buttons[0].width);
         activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
+        printf("oe");
     }
 
     SDL_RenderPresent(renderer);
@@ -382,7 +383,6 @@ void switchToMainMenu(MainScreen* oMainScreen) {
 
 
 void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer) {
-    Menu oScreenMenu;
 
     //assigniation de la liste des boutons
     Button play;
@@ -393,9 +393,9 @@ void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer) {
     play.isClicked = rectIsClicked;
     play.action = switchToMSGame;
     
-    oScreenMenu.nbButtons = 1;
-    oScreenMenu.buttons = &play;
-    initMenu(&oScreenMenu);
+    menu->nbButtons = 1;
+    menu->buttons = &play;
+    initMenu(menu);
     
 }
 
