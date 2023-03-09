@@ -131,8 +131,8 @@ int main(int argc, char* argv[])
 }
 
 
-void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer) {    
-    int iGridLength = 15; 
+void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer) {
+    int iGridLength = 15;
     int iDifficulty = 1;
     int iMinesAmount = round(iGridLength * iGridLength / (6 / iDifficulty) / 2);
     constructMSBoard(&pScreenMS->oBoard, iGridLength, iMinesAmount);
@@ -159,7 +159,7 @@ void switchToMSGame(MainScreen* oMainScreen) {
 }
 /**
 * @param void* activeScreen, contains SDLRessources & Board
-* 
+*
 */
 void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
 
@@ -176,9 +176,9 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
     for (int iRow = 0; iRow < *iGridLength; iRow++) {
         for (int iCol = 0; iCol < *iGridLength; iCol++)
         {
-            pRessources->tile.x = iCol * 50 + winWidth/2 - (50 * *iGridLength)/2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
+            pRessources->tile.x = iCol * 50 + winWidth / 2 - (50 * *iGridLength) / 2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
             pRessources->tile.y = iRow * 50 + winHeight / 2 - (50 * *iGridLength) / 2;//{position x * la taille d'une case, position y * la taille d'une case, taille de la case (20 * 20)}
-            
+
             if (pBoard->grid[iRow * *iGridLength + iCol].isFlag == 1) {
 
                 if ((iRow * pBoard->iGridLength + iCol) % 2 == 0) {
@@ -234,7 +234,7 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
                 pRessources->message = TTF_RenderText_Blended(pRessources->font, pRessources->content, pRessources->fontColor);
                 pRessources->indicTile = SDL_CreateTextureFromSurface(renderer, pRessources->message);
                 SDL_RenderCopy(renderer, pRessources->indicTile, NULL, &pRessources->tile);
-           
+
                 SDL_FreeSurface(pRessources->message);
                 SDL_DestroyTexture(pRessources->indicTile);
             }
@@ -334,7 +334,7 @@ void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer) {
     menu->buttons[0].action = switchToMSGame;
     constructMenu(menu);
     loadMenuSDLRessources(&menu->SDLRessources, renderer);
-    
+
 }
 
 void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
@@ -394,9 +394,9 @@ void switchToMainMenu(MainScreen* oMainScreen) {
 
 
 /*
-* 
+*
 * button -> action(void* this, void* this)
-* 
+*
 * GameMado game mado -> display Game
 * MenuMado menu mado -> display Menu
 Main : Mado mainMado -> display, eventHandler...
