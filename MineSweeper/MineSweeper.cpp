@@ -106,23 +106,21 @@ void loadMenuSDLRessources(MenuSDL_Ressources* SDLRessources, SDL_Renderer* rend
 void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
 
 
+Menu* constructScreenMainMenu();
+
+void initMenu(Menu* menu);
+void switchToMainMenu(MainScreen* oMainScreen);
+
 
 
 int main(int argc, char* argv[])
 {
     TTF_Init();
 
-    //Button play;
-    //play.width = 250;
-    //play.height = 75;
-    //play.text = "DIV";
-    //play.shape = printRectBtn;
-    //play.isClicked = rectIsClicked;
-    //play.action = switchToMSGame;
-
     MainScreen oMainScreen;
     constructMainScreen(&oMainScreen);
-    switchToMSGame(&oMainScreen);
+    switchToMainMenu(&oMainScreen);
+    
 
     SDL_Event event;
     while (1) {
@@ -305,18 +303,18 @@ void constructMenu(Menu* menu) {
 void loadMenuSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
 
 void printRectBtn(Button* button, SDL_Renderer* renderer) {
-    SDL_Rect shape;
+    SDL_Rect rect;
     TTF_Font* vera = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 128);
     SDL_Surface* message;
     SDL_Texture* indicTile;
 
 
-    shape = { button->positionX, button->positionY , button->width, button->height };
+    rect = { button->positionX, button->positionY , button->width, button->height };
     SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
-    SDL_RenderFillRect(renderer, &shape);
+    SDL_RenderFillRect(renderer, &rect);
     message = TTF_RenderText_Blended(vera, button->text, { 201, 8, 8, 255 });
     indicTile = SDL_CreateTextureFromSurface(renderer, message);
-    SDL_RenderCopy(renderer, indicTile, NULL, &shape);
+    SDL_RenderCopy(renderer, indicTile, NULL, &rect);
 }
 
 int rectIsClicked(int x, int y, Button* button) {
@@ -329,14 +327,14 @@ int rectIsClicked(int x, int y, Button* button) {
 }
 
 
-void displayMenu(MainScreen* menu) {
+void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
 
-    Menu* activeMenu = (Menu*)menu->activeScreen;
+    Menu* activeMenu = (Menu*)activeScreen;
     for (int i = 0; i < activeMenu->nbButtons; i++) {
-        activeMenu->buttons[i].shape(&activeMenu->buttons[i], menu->renderer);
+        activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
     }
 
-    SDL_RenderPresent(menu->renderer);
+    SDL_RenderPresent(renderer);
 }
 
 void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
@@ -362,21 +360,39 @@ void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
 
 
 
-//void switchToMainMenu(MainScreen* oMainScreen) {
-//    oMainScreen->activeScreen = constructScreenMainMenu();
-//    oMainScreen->displayScreen = displayMainMenu;
-//    oMainScreen->eventsHandler = mainMenuEventsHandler;
-//}
+void switchToMainMenu(MainScreen* oMainScreen) {
+    oMainScreen->activeScreen = constructScreenMainMenu();
+    oMainScreen->displayScreen = displayMenu;
+    oMainScreen->eventsHandler = mainMenuEventsHandler;
+}
 
-//ScreenMenu* constructScreenMainMenu() {
-//    ScreenMenu oScreenMenu;
-//    //assigniation de la liste des boutons
-//    initMenu(&oScreenMenu);
-//    return &oScreenMenu;
-//}
+Menu* constructScreenMainMenu() {
+    Menu oScreenMenu;
+
+    //assigniation de la liste des boutons
+    Button play;
+    play.width = 250;
+    play.height = 75;
+    play.text = "DIV";
+    play.shape = printRectBtn;
+    play.isClicked = rectIsClicked;
+    play.action = switchToMSGame;
+    
+    oScreenMenu.nbButtons = 1;
+    oScreenMenu.buttons = &play;
+    initMenu(&oScreenMenu);
+    return &oScreenMenu;
+}
 
 
-
+void initMenu(Menu* menu) {
+    int relativY = GetSystemMetrics(SM_CYSCREEN) / 4;
+    for (int i = 0; i < menu->nbButtons; i++) {//sizeof(menu->buttons) / sizeof(Button)
+        menu->buttons[i].positionX = GetSystemMetrics(SM_CXSCREEN) / 2 - menu->buttons[i].width;
+        menu->buttons[i].positionY = relativY;
+        relativY += menu->buttons[i].height + 150;
+    }
+}
 
 
 //initMenu -> initButton
