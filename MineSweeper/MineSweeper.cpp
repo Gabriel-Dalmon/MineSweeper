@@ -340,9 +340,7 @@ void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer) {
 void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
     Menu* activeMenu = (Menu*)activeScreen;
     for (int i = 0; i < activeMenu->nbButtons; i++) {
-        printf("%d", activeMenu->buttons[0].height);
-        //activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
-        //printf("oe");
+        activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
     }
 
     SDL_RenderPresent(renderer);
