@@ -12,12 +12,12 @@
 
 
 typedef struct Popup {
-    void(*displayBack)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
-    void* displayBackContent;
-    Menu* activePlace;
+    void(*displayBackgroundScreen)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
+    void* backgroundScreen;
+    Menu oMenuButtonsList;
 } Popup;
 
-void constructEndPopup(Popup* popup, SDL_Renderer* renderer);
+void constructEndPopup(Popup* popup, void* backgroundScreen, void (*displayBackgroundScreen)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer), SDL_Renderer* renderer);
 void displayPopup(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
 
 #endif

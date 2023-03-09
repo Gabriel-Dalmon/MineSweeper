@@ -23,15 +23,9 @@ void switchToMainMenu(MainScreen* oMainScreen) {
 
 
 void switchToEndPopup(MainScreen* oMainScreen) {
-    Popup popup;
-    //popup.displayBack = malloc(sizeof(void*));
-    popup.displayBack = oMainScreen->displayScreen;
-    popup.displayBackContent = malloc(sizeof(void*));
-    popup.displayBackContent = oMainScreen->activeScreen;
-
-    oMainScreen->activeScreen = malloc(sizeof(Popup*));
-
-    constructEndPopup((Popup*)oMainScreen->activeScreen, oMainScreen->renderer);
+    Popup* pPopup = (Popup*)malloc(sizeof(Popup));
+    constructEndPopup(pPopup, oMainScreen->activeScreen, oMainScreen->displayScreen, oMainScreen->renderer);
+    oMainScreen->activeScreen = pPopup;
 
     oMainScreen->displayScreen = displayPopup;
     oMainScreen->eventsHandler = mainMenuEventsHandler;
