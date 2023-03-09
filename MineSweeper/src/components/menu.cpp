@@ -41,8 +41,10 @@ void printRectBtn(Button* button, SDL_Renderer* renderer) {
     SDL_DestroyTexture(indicTile);
 }
 
+#include <stdio.h>
+
 int rectIsClicked(int x, int y, Button* button) {
-    if (button->positionX < x < button->positionX + button->width && button->positionY < y < button->positionY + button->height) {
+    if (button->positionX < x && x < button->positionX + button->width && button->positionY < y && y < button->positionY + button->height) {
         return 1;
     }
     else {

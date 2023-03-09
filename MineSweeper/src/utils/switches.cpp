@@ -31,5 +31,5 @@ void switchToEndPopup(MainScreen* oMainScreen) {
     oMainScreen->activeScreen = pPopup;
 
     oMainScreen->displayScreen = displayPopup;
-    oMainScreen->eventsHandler = mainMenuEventsHandler;
+    oMainScreen->eventsHandler = popupEventsHandler;
 }

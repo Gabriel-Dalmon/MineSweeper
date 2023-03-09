@@ -19,6 +19,8 @@ typedef struct MSSDL_Ressources {
     SDL_Texture* indicTile;
     SDL_Surface* flagImg;
     SDL_Texture* flagTexture;
+    SDL_Surface* mineImg;
+    SDL_Texture* mineTexture;
 } MSSDL_Ressources;
 
 typedef struct ScreenMS {
