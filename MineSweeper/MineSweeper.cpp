@@ -121,6 +121,8 @@ int main(int argc, char* argv[])
     MainScreen oMainScreen;
     constructMainScreen(&oMainScreen);
     switchToMainMenu(&oMainScreen);
+    Menu* bite = (Menu*)oMainScreen.activeScreen;
+    printf("%d", bite->buttons[0].width);
 
     SDL_Event event;
     while (1) {
@@ -330,8 +332,9 @@ int rectIsClicked(int x, int y, Button* button) {
 
 void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
     Menu* activeMenu = (Menu*)activeScreen;
+    printf("%d||", activeMenu->nbButtons);
+    printf("%d", activeMenu->buttons[0].width);
     for (int i = 0; i < activeMenu->nbButtons; i++) {
-        printf("%d", activeMenu->buttons[0].width);
         activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
         printf("oe");
     }
@@ -392,6 +395,8 @@ void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer) {
     play.shape = printRectBtn;
     play.isClicked = rectIsClicked;
     play.action = switchToMSGame;
+    
+
     
     menu->nbButtons = 1;
     menu->buttons = &play;
