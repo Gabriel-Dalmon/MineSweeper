@@ -11,6 +11,7 @@
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <windows.h>
+#include <SDL_mixer.h>
 
 #include "headers\mslogic.h"
 #include "headers\msutils.h"
@@ -70,6 +71,7 @@ typedef struct ScreenMS {
     Board oBoard;
     Menu UIMenu;
     MSSDL_Ressources SDLRessources;
+    Mix_Music* loop;
 } ScreenMS;
 
 
@@ -77,6 +79,12 @@ typedef struct ScreenMSDiffSelectMenu {
     Menu oMenu;
 } ScreenMSDiffSelectMenu;
 
+
+typedef struct Popup {
+    void(*displayBack)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
+    void* displayBackContent;
+    Menu* activePlace;
+} Popup;
 
 
 
@@ -108,11 +116,17 @@ void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer);
 void initMenu(Menu* menu);
 void switchToMainMenu(MainScreen* oMainScreen);
 void loadMenuSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
+void constructEndPopup(Popup* popup, SDL_Renderer* renderer);
+void switchToEndPopup(MainScreen* oMainScreen);
+void displayPopup(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
 
 
 int main(int argc, char* argv[])
 {
     TTF_Init();
+    Mix_Init(0x00000008);//on iinitialise au format mp3
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+    
 
     MainScreen oMainScreen;
     constructMainScreen(&oMainScreen);
@@ -137,6 +151,7 @@ void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer) {
     int iMinesAmount = round(iGridLength * iGridLength / (6 / iDifficulty) / 2);
     constructMSBoard(&pScreenMS->oBoard, iGridLength, iMinesAmount);
 
+    pScreenMS->loop = Mix_LoadMUS("audio/main_loop.mp3");
     loadMSSDLRessources(&pScreenMS->SDLRessources, renderer);
 }
 void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
@@ -156,6 +171,7 @@ void switchToMSGame(MainScreen* oMainScreen) {
     constructScreenMS((ScreenMS*)oMainScreen->activeScreen, oMainScreen->renderer);
     oMainScreen->displayScreen = displayMSGame;
     oMainScreen->eventsHandler = MSGameEventsHandler;
+    Mix_PlayMusic(((ScreenMS*)oMainScreen->activeScreen)->loop, -1);
 }
 /**
 * @param void* activeScreen, contains SDLRessources & Board
@@ -257,11 +273,13 @@ void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
         int y = floor(event->button.y / 50);
         int xCanva = floor((event->button.x - winWidth / 2 + (50 * pBoard->iGridLength) / 2) / 50);
         int yCanva = floor((event->button.y - winHeight / 2 + (50 * pBoard->iGridLength) / 2) / 50);
-        printf("(%d|%d) - (%d|%d)", x, y, xCanva, yCanva);
         if (event->button.button == 1 && isCoordInGrid(&pBoard->iGridLength, xCanva, yCanva)) {
             revealCase(pBoard, xCanva, yCanva);
             pBoard->iCursorPosition[0] = xCanva;
             pBoard->iCursorPosition[1] = yCanva;
+            if (isGameOver(pBoard, pBoard->iCursorPosition[0], pBoard->iCursorPosition[1])) {
+                switchToEndPopup(oMainScreen);
+            };
         }
         else if (event->button.button == 3 && isCoordInGrid(&pBoard->iGridLength, xCanva, yCanva)) {
             setFlag(pBoard, xCanva, yCanva);
@@ -292,7 +310,7 @@ void printRectBtn(Button* button, SDL_Renderer* renderer) {
     TTF_Font* vera = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 128);
     SDL_Surface* message;
     SDL_Texture* indicTile;
-    printf("ok");
+    //--- utiliser load---
 
 
     rect = { button->positionX, button->positionY , button->width, button->height };
@@ -376,6 +394,60 @@ void switchToMainMenu(MainScreen* oMainScreen) {
     oMainScreen->eventsHandler = mainMenuEventsHandler;
 }
 
+
+void switchToEndPopup(MainScreen* oMainScreen) {
+    Popup popup;
+    popup.displayBack = oMainScreen->displayScreen;
+    popup.displayBackContent = (oMainScreen->activeScreen);
+    popup.displayBackContent = oMainScreen->activeScreen;
+
+    realloc(oMainScreen->activeScreen, sizeof(Popup));
+
+    constructEndPopup((Popup*)oMainScreen->activeScreen, oMainScreen->renderer);
+
+    oMainScreen->displayScreen = displayPopup;
+    oMainScreen->eventsHandler = mainMenuEventsHandler;
+}
+
+
+
+
+
+void displayPopup(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
+    Popup* activePopup = (Popup*)activeScreen;
+    activePopup->displayBack(activePopup->displayBackContent, window, renderer);
+    for (int i = 0; i < activePopup->activePlace->nbButtons; i++) {
+        activePopup->activePlace->buttons[i].shape(&activePopup->activePlace->buttons[i], renderer);
+
+
+        SDL_RenderPresent(renderer);
+    }
+}
+
+
+void constructEndPopup(Popup* popup, SDL_Renderer* renderer) {
+
+    //assigniation de la liste des boutons
+    popup->activePlace->nbButtons = 2;
+    popup->activePlace->buttons = (Button*)malloc(sizeof(Button) * popup->activePlace->nbButtons);
+               
+    popup->activePlace->buttons[0].width = 250;
+    popup->activePlace->buttons[0].height = 75;
+    popup->activePlace->buttons[0].text = "play again";
+    popup->activePlace->buttons[0].shape = printRectBtn;
+    popup->activePlace->buttons[0].isClicked = rectIsClicked;
+    popup->activePlace->buttons[0].action = switchToMSGame;
+                      
+    popup->activePlace->buttons[1].width = 250;
+    popup->activePlace->buttons[1].height = 75;
+    popup->activePlace->buttons[1].text = "back to menu";
+    popup->activePlace->buttons[1].shape = printRectBtn;
+    popup->activePlace->buttons[1].isClicked = rectIsClicked;
+    popup->activePlace->buttons[1].action = switchToMainMenu;
+
+    constructMenu(popup->activePlace);
+    loadMenuSDLRessources(&popup->activePlace->SDLRessources, renderer);
+}
 
 //initMenu -> initButton
 //            placeButton
