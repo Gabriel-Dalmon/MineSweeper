@@ -37,11 +37,7 @@ void constructEndPopup(Popup* popup, void* backgroundScreen, void (*displayBackg
 void displayPopup(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
     Popup* activePopup = (Popup*)activeScreen;
     activePopup->displayBackgroundScreen(activePopup->backgroundScreen, window, renderer);
-
-    for (int i = 0; i < activePopup->oMenuButtonsList.nbButtons; i++) {
-        activePopup->oMenuButtonsList.buttons[i].shape(&activePopup->oMenuButtonsList.buttons[i], renderer);
-        SDL_RenderPresent(renderer);
-    }
+    displayMenu(&activePopup->oMenuButtonsList, window, renderer);
 }
 
 void popupEventsHandler(MainScreen* screen, SDL_Event* event) {
@@ -56,7 +52,7 @@ void popupEventsHandler(MainScreen* screen, SDL_Event* event) {
 
         if (event->button.button == 1) {
             for (int i = 0; i < menu.nbButtons; i++) {
-                if (menu.buttons[i].isClicked(x, y, menu.buttons) == 1) {
+                if (menu.buttons[i].isClicked(x, y, &menu.buttons[i]) == 1) {
                     menu.buttons[i].action(screen);
                 }
             }
