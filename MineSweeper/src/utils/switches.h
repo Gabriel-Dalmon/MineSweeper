@@ -6,6 +6,7 @@
 
 void switchToMSGame(MainScreen* oMainScreen);
 void switchToMainMenu(MainScreen* oMainScreen);
+void switchToEndPopup(MainScreen* oMainScreen);
 
 
 #endif

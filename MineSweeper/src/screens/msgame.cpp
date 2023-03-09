@@ -122,6 +122,9 @@ void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
             revealCase(pBoard, xCanva, yCanva);
             pBoard->iCursorPosition[0] = xCanva;
             pBoard->iCursorPosition[1] = yCanva;
+            if (isGameOver(pBoard, pBoard->iCursorPosition[0], pBoard->iCursorPosition[1])) {
+                switchToEndPopup(oMainScreen);
+            };
         }
         else if (event->button.button == 3 && isCoordInGrid(&pBoard->iGridLength, xCanva, yCanva)) {
             setFlag(pBoard, xCanva, yCanva);
