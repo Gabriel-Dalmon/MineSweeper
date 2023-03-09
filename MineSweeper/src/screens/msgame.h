@@ -5,6 +5,7 @@
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <stdio.h>
+#include <SDL_mixer.h>
 
 #include "..\components\menu.h"
 #include "..\games\mslogic.h"
@@ -24,6 +25,7 @@ typedef struct ScreenMS {
     Board oBoard;
     Menu UIMenu;
     MSSDL_Ressources SDLRessources;
+    Mix_Music* loop;
 } ScreenMS;
 
 void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer);

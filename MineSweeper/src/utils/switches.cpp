@@ -9,6 +9,7 @@ void switchToMSGame(MainScreen* oMainScreen) {
     constructScreenMS((ScreenMS*)oMainScreen->activeScreen, oMainScreen->renderer);
     oMainScreen->displayScreen = displayMSGame;
     oMainScreen->eventsHandler = MSGameEventsHandler;
+    Mix_PlayMusic(((ScreenMS*)oMainScreen->activeScreen)->loop, -1);
 }
 
 
@@ -23,6 +24,8 @@ void switchToMainMenu(MainScreen* oMainScreen) {
 
 
 void switchToEndPopup(MainScreen* oMainScreen) {
+    Mix_HaltMusic();
+
     Popup* pPopup = (Popup*)malloc(sizeof(Popup));
     constructEndPopup(pPopup, oMainScreen->activeScreen, oMainScreen->displayScreen, oMainScreen->renderer);
     oMainScreen->activeScreen = pPopup;
