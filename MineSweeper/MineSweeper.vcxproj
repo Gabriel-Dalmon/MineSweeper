@@ -131,15 +131,28 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="mineSweeper.cpp" />
-    <ClCompile Include="board.cpp" />
     <ClCompile Include="msutils.cpp" />
+    <ClCompile Include="src\components\menu.cpp" />
+    <ClCompile Include="src\components\popup.cpp" />
+    <ClCompile Include="src\games\mslogic.cpp" />
+    <ClCompile Include="src\screens\mainmenu.cpp" />
+    <ClCompile Include="src\screens\msgame.cpp" />
+    <ClCompile Include="src\utils\global.cpp" />
+    <ClCompile Include="src\utils\switches.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="board.h">
+    <ClInclude Include="mslogic.h">
       <DeploymentContent>false</DeploymentContent>
       <FileType>CppHeader</FileType>
     </ClInclude>
     <ClInclude Include="msutils.h" />
+    <ClInclude Include="src\components\menu.h" />
+    <ClInclude Include="src\components\popup.h" />
+    <ClInclude Include="src\games\mslogic.h" />
+    <ClInclude Include="src\screens\mainmenu.h" />
+    <ClInclude Include="src\screens\msgame.h" />
+    <ClInclude Include="src\utils\global.h" />
+    <ClInclude Include="src\utils\switches.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

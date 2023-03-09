@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <conio.h>
-#include "headers\mslogic.h"
-#include "headers\msutils.h"
+#include "mslogic.h"
+#include "..\..\headers\msutils.h"
 
 void constructMSBoard(Board* oBoard, int iGridLength, int iMinesAmount) {
     oBoard->iGridLength = iGridLength;
@@ -127,7 +127,6 @@ int isGameOver(Board* oBoard, int x, int y) {
         return 0;
     }
 }
-
 
 
 void displayBoard(Board oBoard) {
