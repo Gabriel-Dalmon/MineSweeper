@@ -9,6 +9,7 @@ void switchToMSGame(MainScreen* oMainScreen) {
     constructScreenMS((ScreenMS*)oMainScreen->activeScreen, oMainScreen->renderer);
     oMainScreen->displayScreen = displayMSGame;
     oMainScreen->eventsHandler = MSGameEventsHandler;
+    Mix_PlayMusic(((ScreenMS*)oMainScreen->activeScreen)->loop, -1);
 }
 
 
@@ -23,6 +24,7 @@ void switchToMainMenu(MainScreen* oMainScreen) {
 
 
 void switchToEndPopup(MainScreen* oMainScreen) {
+    Mix_HaltMusic();
     Popup popup;
     //popup.displayBack = malloc(sizeof(void*));
     popup.displayBack = oMainScreen->displayScreen;

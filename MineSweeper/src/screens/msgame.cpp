@@ -6,6 +6,7 @@ void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer) {
     int iDifficulty = 1;
     int iMinesAmount = round(iGridLength * iGridLength / (6 / iDifficulty) / 2);
     constructMSBoard(&pScreenMS->oBoard, iGridLength, iMinesAmount);
+    pScreenMS->loop = Mix_LoadMUS("audio/main_loop.mp3");
 
     loadMSSDLRessources(&pScreenMS->SDLRessources, renderer);
 }
