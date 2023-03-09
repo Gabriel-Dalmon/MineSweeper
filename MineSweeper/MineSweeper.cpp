@@ -75,10 +75,7 @@ typedef struct ScreenMS {
 
 typedef struct ScreenMSDiffSelectMenu {
     Menu oMenu;
-    MenuSDL_Ressources SDLRessources;
 } ScreenMSDiffSelectMenu;
-
-
 
 
 
@@ -111,7 +108,6 @@ void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer);
 void initMenu(Menu* menu);
 void switchToMainMenu(MainScreen* oMainScreen);
 void loadMenuSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
-
 
 
 int main(int argc, char* argv[])
@@ -149,16 +145,12 @@ void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer
     SDLRessources->flagImg = IMG_Load("img/good_flag.png");
     SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
 }
-
 void loadMenuSDLRessources(MenuSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
     SDLRessources->tile.w = SDLRessources->tile.h = 50;
     SDLRessources->font = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 96);
     SDLRessources->flagImg = IMG_Load("img/good_flag.png");
     SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
 }
-
-
-
 void switchToMSGame(MainScreen* oMainScreen) {
     oMainScreen->activeScreen = realloc(oMainScreen->activeScreen, sizeof(ScreenMS));
     constructScreenMS((ScreenMS*)oMainScreen->activeScreen, oMainScreen->renderer);
@@ -283,7 +275,7 @@ void constructScreenMSDiffSelectMenu(ScreenMSDiffSelectMenu* pActiveScreen, SDL_
     loadMenuSDLRessources(&pActiveScreen->oMenu.SDLRessources, renderer);
 }
 
-void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
+//void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
 
 void constructMainScreen(MainScreen* oMainScreen) {
     oMainScreen->window = SDL_CreateWindow("MineSweeper", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SDL_WINDOW_RESIZABLE);
@@ -291,14 +283,7 @@ void constructMainScreen(MainScreen* oMainScreen) {
     oMainScreen->activeScreen = malloc(sizeof(int));
 }
 
-void constructMenu(Menu* menu) {
-    int relativY = GetSystemMetrics(SM_CYSCREEN) / 4;
-    for (int i = 0; i < menu->nbButtons; i++) {
-        menu->buttons[i].positionX = GetSystemMetrics(SM_CXSCREEN) / 2 - menu->buttons[i].width;
-        menu->buttons[i].positionY = relativY;
-        relativY += menu->buttons[i].height + 150;
-    }
-}
+
 
 
 
@@ -327,25 +312,41 @@ int rectIsClicked(int x, int y, Button* button) {
     }
 }
 
+void constructMenu(Menu* menu) {
+    int relativY = GetSystemMetrics(SM_CYSCREEN) / 4;
+    for (int i = 0; i < menu->nbButtons; i++) {
+        menu->buttons[i].positionX = GetSystemMetrics(SM_CXSCREEN) / 2 - menu->buttons[i].width;
+        menu->buttons[i].positionY = relativY;
+        relativY += menu->buttons[i].height + 150;
+    }
+}
+
+void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer) {
+
+    //assigniation de la liste des boutons
+    menu->nbButtons = 1;
+    menu->buttons = (Button*)malloc(sizeof(Button) * menu->nbButtons);
+    menu->buttons[0].width = 250;
+    menu->buttons[0].height = 75;
+    menu->buttons[0].text = "DIV";
+    menu->buttons[0].shape = printRectBtn;
+    menu->buttons[0].isClicked = rectIsClicked;
+    menu->buttons[0].action = switchToMSGame;
+    constructMenu(menu);
+    loadMenuSDLRessources(&menu->SDLRessources, renderer);
+    
+}
 
 void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
     Menu* activeMenu = (Menu*)activeScreen;
     for (int i = 0; i < activeMenu->nbButtons; i++) {
-        printf("%d", activeMenu->buttons[0].width);
-        activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
-        printf("oe");
+        printf("%d", activeMenu->buttons[0].height);
+        //activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
+        //printf("oe");
     }
 
     SDL_RenderPresent(renderer);
 }
-
-
-
-
-
-
-
-
 
 
 void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
@@ -370,49 +371,11 @@ void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
 }
 
 
-
 void switchToMainMenu(MainScreen* oMainScreen) {
     oMainScreen->activeScreen = realloc(oMainScreen->activeScreen, sizeof(Menu));
     constructScreenMainMenu((Menu*)oMainScreen->activeScreen, oMainScreen->renderer);
     oMainScreen->displayScreen = displayMenu;
     oMainScreen->eventsHandler = mainMenuEventsHandler;
-}
-
-
-
-
-
-void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer) {
-
-    //assigniation de la liste des boutons
-    Button play;
-    play.width = 250;
-    play.height = 75;
-    play.text = "DIV";
-    play.shape = printRectBtn;
-    play.isClicked = rectIsClicked;
-    play.action = switchToMSGame;
-    
-    menu->nbButtons = 1;
-    menu->buttons = &play;
-    initMenu(menu);
-    
-}
-
-
-
-
-
-
-
-
-void initMenu(Menu* menu) {
-    int relativY = GetSystemMetrics(SM_CYSCREEN) / 4;
-    for (int i = 0; i < menu->nbButtons; i++) {//sizeof(menu->buttons) / sizeof(Button)
-        menu->buttons[i].positionX = GetSystemMetrics(SM_CXSCREEN) / 2 - menu->buttons[i].width;
-        menu->buttons[i].positionY = relativY;
-        relativY += menu->buttons[i].height + 150;
-    }
 }
 
 
@@ -452,3 +415,4 @@ switchMadoToMenu : update main mado display, eventhandler with menu display, men
 
 */
 
+// struct Button, struct Menu, constructMainMenu, constructDiffSelectMenu..., displayMenu, MenuEventHandler
