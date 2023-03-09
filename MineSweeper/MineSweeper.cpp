@@ -26,17 +26,14 @@ typedef struct MSSDL_Ressources {
     SDL_Texture* flagTexture;
 } MSSDL_Ressources;
 
-typedef struct ScreenMS {
-    Board oBoard;
-    Menu UIMenu;
-    MSSDL_Ressources SDLRessources;
-} ScreenMS;
 
-void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer);
-void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
-void switchToMSGame(MainScreen* oMainScreen);
-void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
-void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event);
+typedef struct MainScreen {
+    void* activeScreen;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    void (*displayScreen)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
+    void (*eventsHandler)(MainScreen* oMainScreen, SDL_Event* events);
+} MainScreen;
 
 
 typedef struct MenuSDL_Ressources {
@@ -68,29 +65,47 @@ typedef struct Menu {
     int nbButtons;
 } Menu;
 
+
+typedef struct ScreenMS {
+    Board oBoard;
+    Menu UIMenu;
+    MSSDL_Ressources SDLRessources;
+} ScreenMS;
+
+
 typedef struct ScreenMSDiffSelectMenu {
     Menu oMenu;
     MenuSDL_Ressources SDLRessources;
 } ScreenMSDiffSelectMenu;
+
+
+
+
+
+
+
+void constructMainScreen(MainScreen* oMainScreen);
+
+void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event);
+void constructMenu(Menu* menu);
+
+
+
+
+
+
+//cest important de les mettres sous les struct sinon pakonten
+void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer);
+void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
+void switchToMSGame(MainScreen* oMainScreen);
+void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
+void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event);
 
 void constructScreenMSDiffSelectMenu(ScreenMSDiffSelectMenu* pScreenMS, SDL_Renderer* renderer);
 void loadMenuSDLRessources(MenuSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
 void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
 
 
-
-typedef struct MainScreen {
-    void* activeScreen;
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    void (*displayScreen)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
-    void (*eventsHandler)(MainScreen* oMainScreen, SDL_Event* events);
-} MainScreen;
-
-void constructMainScreen(MainScreen* oMainScreen);
-
-void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event);
-void constructMenu(Menu* menu);
 
 
 int main(int argc, char* argv[])
