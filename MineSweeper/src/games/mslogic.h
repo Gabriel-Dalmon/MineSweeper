@@ -1,8 +1,11 @@
 #ifndef MSLOGIC_H_INCLUDED
 #define MSLOGIC_H_INCLUDED
 
+/**
+* Virtually represents a case in the MSBoard.
+*/
 typedef struct Case {
-    int iContent; // 9 = mines, 0-8 = amount of adjacent mines
+    int iContent; /**@var int iContent - 9 = mines, 0-8 = amount of adjacent mines */
     int isVisible; // 1 = visible, 0 = hidden;
     int isFlag; //1 = drapeau, 0 = pas de drapeau
 } Case;

@@ -8,8 +8,18 @@
 #include "..\utils\global.h"
 #include "..\components\menu.h"
 
-
+/**
+* Constructs the main menu and initializes the buttons list.
+* @param Menu* menu - destination pointer.
+* @SDL_Renderer* renderer - The struct containing the rendering state.
+*/
 void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer);
+
+/**
+* Constructs the difficulty selection menu and initializes the buttons list.
+* @param Menu* menu - destination pointer.
+* @SDL_Renderer* renderer - The struct containing the rendering state.
+*/
 void constructScreenDiffSelectMenu(Menu* menu, SDL_Renderer* renderer);
 
 #endif
