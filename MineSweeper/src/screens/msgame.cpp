@@ -1,9 +1,8 @@
 #include "msgame.h"
 #include "..\utils\switches.h"
 
-void constructScreenMS(ScreenMS* pScreenMS, int difficulty, SDL_Renderer* renderer) {
-    int iGridLength = 15;
-    int iDifficulty = difficulty;
+void constructScreenMS(ScreenMS* pScreenMS, int iDifficulty, SDL_Renderer* renderer) {
+    int iGridLength = 7 + 4 * iDifficulty;
     int iMinesAmount = round(iGridLength * iGridLength / (6 / iDifficulty) / 2);
     constructMSBoard(&pScreenMS->oBoard, iGridLength, iMinesAmount);
     pScreenMS->loop = Mix_LoadMUS("audio/main_loop.mp3");
@@ -41,6 +40,13 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
 
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
+
+    //on initialise une variable pour caller l'affichage carrelé en cas de grid de taille paire
+    int wedger = 0;
+    if (pBoard->iGridLength % 2 == 0) {
+        wedger = 1;
+    }
+
     for (int iRow = 0; iRow < *iGridLength; iRow++) {
         for (int iCol = 0; iCol < *iGridLength; iCol++)
         {
@@ -49,7 +55,7 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
 
             if (pBoard->grid[iRow * *iGridLength + iCol].isFlag == 1) {
 
-                if ((iRow * pBoard->iGridLength + iCol) % 2 == 0) {
+                if ((iRow * (pBoard->iGridLength + wedger) + iCol) % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
                 }
                 else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
@@ -62,7 +68,7 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
             else if (pBoard->grid[iRow * *iGridLength + iCol].isVisible == 0) {
 
 
-                if ((iRow * *iGridLength + iCol) % 2 == 0) {
+                if ((iRow * (*iGridLength + wedger) + iCol) % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 160, 0, 160, 255);
                 }
                 else { SDL_SetRenderDrawColor(renderer, 150, 0, 150, 255); }
@@ -81,7 +87,7 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
 
                 }else
                 {
-                    if ((iRow * *iGridLength + iCol) % 2 == 0) {
+                    if ((iRow * (*iGridLength + wedger) + iCol) % 2 == 0) {
                         SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
                     }
                     else {
