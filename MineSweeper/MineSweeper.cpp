@@ -18,28 +18,7 @@
 #include "src\screens\msgame.h"
 #include "src\screens\mainmenu.h"
 #include "src\utils\global.h"
-#include "headers\msutils.h"
 #include "src\utils\switches.h"
-
-
-
-
-
-typedef struct ScreenMSDiffSelectMenu {
-    Menu oMenu;
-} ScreenMSDiffSelectMenu;
-
-
-
-
-
-
-
-
-void constructScreenMSDiffSelectMenu(ScreenMSDiffSelectMenu* pScreenMS, SDL_Renderer* renderer);
-
-//void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
-
 
 
 
@@ -55,24 +34,18 @@ int main(int argc, char* argv[])
     switchToMainMenu(&oMainScreen);
 
     SDL_Event event;
-    while (1) {
+    while (oMainScreen.isAppRunning) {
         //EVENTS
         while (SDL_PollEvent(&event)) {
             oMainScreen.eventsHandler(&oMainScreen, &event);
         }
         //DISPLAY
+        SDL_RenderClear(oMainScreen.renderer);
         oMainScreen.displayScreen(oMainScreen.activeScreen, oMainScreen.window, oMainScreen.renderer);
         SDL_RenderPresent(oMainScreen.renderer);
     }
+
+    free(oMainScreen.activeScreen);
+    Mix_CloseAudio();
     return 0;
 }
-
-
-
-void constructScreenMSDiffSelectMenu(ScreenMSDiffSelectMenu* pActiveScreen, SDL_Renderer* renderer) {
-    constructMenu(&pActiveScreen->oMenu);
-    loadMenuSDLRessources(&pActiveScreen->oMenu.SDLRessources, renderer);
-}
-
-//void switchToMSDiffSelectMenu(MainScreen* oMainScreen);
-

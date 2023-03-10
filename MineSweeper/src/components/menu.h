@@ -15,19 +15,18 @@ typedef struct MenuSDL_Ressources {
     SDL_Surface* message;
     char content[2];
     SDL_Texture* indicTile;
-    SDL_Surface* flagImg;
-    SDL_Texture* flagTexture;
 } MenuSDL_Ressources;
 
 typedef struct Button {
-    int height;
     int width;
+    int height;
     int positionX;
     int positionY;
+    int type;//type = 1 -> switch screen Button
     const char* text;
     int(*isClicked)(int x, int y, Button* button);
     void(*action)(MainScreen* oMainScreen);
-    void(*shape)(Button* button, SDL_Renderer* renderer);
+    void(*shape)(Button* button, MenuSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
 }Button;
 
 typedef struct Menu {
@@ -56,8 +55,8 @@ void constructMenu(Menu* menu);
 void loadMenuSDLRessources(MenuSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
 
 void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
-
-void printRectBtn(Button* button, SDL_Renderer* renderer);
+void menuEventsHandler(MainScreen* mainMenu, SDL_Event* event);
+void printRectBtn(Button* button, MenuSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
 int rectIsClicked(int x, int y, Button* button);
-
+void destroyMenu(void* pMenu);
 #endif

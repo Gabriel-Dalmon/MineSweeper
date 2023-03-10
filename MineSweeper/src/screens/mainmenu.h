@@ -10,6 +10,6 @@
 
 
 void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer);
-void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event);
+void constructScreenDiffSelectMenu(Menu* menu, SDL_Renderer* renderer);
 
 #endif

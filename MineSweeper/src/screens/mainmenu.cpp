@@ -7,37 +7,52 @@
 void constructScreenMainMenu(Menu* menu, SDL_Renderer* renderer) {
 
     //assigniation de la liste des boutons
-    menu->nbButtons = 1;
+    menu->nbButtons = 2;
     menu->buttons = (Button*)malloc(sizeof(Button) * menu->nbButtons);
     menu->buttons[0].width = 250;
-    menu->buttons[0].height = 75;
-    menu->buttons[0].text = "DIV";
+    menu->buttons[0].height = 120;
+    menu->buttons[0].type = 1;
+    menu->buttons[0].text = "Play";
     menu->buttons[0].shape = printRectBtn;
     menu->buttons[0].isClicked = rectIsClicked;
-    menu->buttons[0].action = switchToMSGame;
+    menu->buttons[0].action = switchToDiffSelectMenu;
+
+    menu->buttons[1] = { 250,120,NULL,NULL,0,"Quit", rectIsClicked, quitApp, printRectBtn };
+
+
     constructMenu(menu);
     loadMenuSDLRessources(&menu->SDLRessources, renderer);
-
 }
 
+void constructScreenDiffSelectMenu(Menu* menu, SDL_Renderer* renderer) {
 
-void mainMenuEventsHandler(MainScreen* mainMenu, SDL_Event* event) {
-    switch (event->type)
-    {
-    case SDL_MOUSEBUTTONDOWN:
+    //assigniation de la liste des boutons
+    menu->nbButtons = 3;
+    menu->buttons = (Button*)malloc(sizeof(Button) * menu->nbButtons);
 
-        Menu* menu = (Menu*)mainMenu->activeScreen;
+    menu->buttons[0].width = 125;
+    menu->buttons[0].height = 60;
+    menu->buttons[0].text = "Easy";
+    menu->buttons[0].shape = printRectBtn;
+    menu->buttons[0].isClicked = rectIsClicked;
+    menu->buttons[0].action = switchToMSGameEasy;
 
-        int x = floor(event->button.x);
-        int y = floor(event->button.y);
+    menu->buttons[1].width = 187;
+    menu->buttons[1].height = 60;
+    menu->buttons[1].text = "Normal";
+    menu->buttons[1].shape = printRectBtn;
+    menu->buttons[1].isClicked = rectIsClicked;
+    menu->buttons[1].action = switchToMSGameNormal;
 
-        if (event->button.button == 1) {
-            for (int i = 0; i < menu->nbButtons; i++) {
-                if (menu->buttons[i].isClicked(x, y, menu->buttons) == 1) {
-                    menu->buttons[i].action(mainMenu);
-                }
-            }
-        }
-        break;
-    }
+    menu->buttons[2].width = 125;
+    menu->buttons[2].height = 60;
+    menu->buttons[2].text = "Hard";
+    menu->buttons[2].shape = printRectBtn;
+    menu->buttons[2].isClicked = rectIsClicked;
+    menu->buttons[2].action = switchToMSGameHard;
+
+
+
+    constructMenu(menu);
+    loadMenuSDLRessources(&menu->SDLRessources, renderer);
 }

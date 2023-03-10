@@ -3,7 +3,7 @@
 #include <time.h>
 #include <conio.h>
 #include "mslogic.h"
-#include "..\..\headers\msutils.h"
+#include "..\utils\msutils.h"
 
 void constructMSBoard(Board* oBoard, int iGridLength, int iMinesAmount) {
     oBoard->iGridLength = iGridLength;

@@ -30,10 +30,10 @@ typedef struct ScreenMS {
     Mix_Music* loop;
 } ScreenMS;
 
-void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer);
+void constructScreenMS(ScreenMS* pScreenMS, int difficulty, SDL_Renderer* renderer);
 void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer);
 void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
 void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event);
-
+void destroyScreenMS(void* pScreenMS);
 
 #endif

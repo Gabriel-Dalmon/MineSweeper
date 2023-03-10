@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "menu.h"
 
 
@@ -15,31 +14,58 @@ void constructMenu(Menu* menu) {
 void loadMenuSDLRessources(MenuSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
     SDLRessources->tile.w = SDLRessources->tile.h = 50;
     SDLRessources->font = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 96);
-    SDLRessources->flagImg = IMG_Load("img/good_flag.png");
-    SDLRessources->flagTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->flagImg);
+}
+
+void destroyMenu(void* pMenu) {
+    TTF_CloseFont(((Menu*)pMenu)->SDLRessources.font);
+    free(((Menu*)pMenu)->buttons);
 }
 
 void displayMenu(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer) {
     Menu* activeMenu = (Menu*)activeScreen;
     for (int i = 0; i < activeMenu->nbButtons; i++) {
-        activeMenu->buttons[i].shape(&activeMenu->buttons[i], renderer);
+        activeMenu->buttons[i].shape(&activeMenu->buttons[i], &activeMenu->SDLRessources, renderer);
     }
 }
 
-void printRectBtn(Button* button, SDL_Renderer* renderer) {
-    SDL_Rect rect;
-    TTF_Font* vera = TTF_OpenFont("fonts/ttf-bitstream-vera-1.10/Vera.ttf", 128);
-    SDL_Surface* message;
-    SDL_Texture* indicTile;
 
-    rect = { button->positionX, button->positionY , button->width, button->height };
-    SDL_SetRenderDrawColor(renderer, 80, 80, 80, 255);
-    SDL_RenderFillRect(renderer, &rect);
-    message = TTF_RenderText_Blended(vera, button->text, { 201, 8, 8, 255 });
-    indicTile = SDL_CreateTextureFromSurface(renderer, message);
-    SDL_RenderCopy(renderer, indicTile, NULL, &rect);
-    SDL_FreeSurface(message);
-    SDL_DestroyTexture(indicTile);
+void menuEventsHandler(MainScreen* mainScreen, SDL_Event* event) {
+    switch (event->type)
+    {
+    case SDL_MOUSEBUTTONDOWN:
+
+        Menu* menu = (Menu*)mainScreen->activeScreen;
+
+        int x = floor(event->button.x);
+        int y = floor(event->button.y);
+
+        if (event->button.button == 1) {
+            for (int i = 0; i < menu->nbButtons; i++) {
+                if (menu->buttons[i].isClicked(x, y, &menu->buttons[i]) == 1) {
+                    void(*action)(MainScreen * oMainScreen) = menu->buttons[i].action;
+                    action(mainScreen);
+                    if (menu->buttons[i].type == 1) {
+                        destroyMenu(menu);
+                        break;
+                    }
+                }
+            }
+        }
+        break;
+    }
+}
+
+void printRectBtn(Button* button, MenuSDL_Ressources* SDLRessources, SDL_Renderer* renderer) {
+
+    SDLRessources->tile = { button->positionX, button->positionY , button->width, button->height };
+    SDL_SetRenderDrawColor(renderer, 40, 6, 66, 255);
+    SDL_RenderFillRect(renderer, &SDLRessources->tile);
+    SDLRessources->message = TTF_RenderText_Blended(SDLRessources->font, button->text, { 255, 255, 255, 255 });
+    SDLRessources->indicTile = SDL_CreateTextureFromSurface(renderer, SDLRessources->message);
+    SDL_RenderCopy(renderer, SDLRessources->indicTile, NULL, &SDLRessources->tile);
+
+    SDL_FreeSurface(SDLRessources->message);
+    SDL_DestroyTexture(SDLRessources->indicTile);
 }
 
 

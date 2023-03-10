@@ -3,10 +3,13 @@
 
 #include "global.h"
 
-
-void switchToMSGame(MainScreen* oMainScreen);
+void switchToMSGameEasy(MainScreen* oMainScreen);
+void switchToMSGameNormal(MainScreen* oMainScreen);
+void switchToMSGameHard(MainScreen* oMainScreen);
+void switchToMSGame(MainScreen* oMainScreen, int difficulty);
 void switchToMainMenu(MainScreen* oMainScreen);
 void switchToEndPopup(MainScreen* oMainScreen);
-
+void switchToDiffSelectMenu(MainScreen* oMainScreen);
+void quitApp(MainScreen* oMainScreen);
 
 #endif

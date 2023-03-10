@@ -1,9 +1,9 @@
 #include "msgame.h"
 #include "..\utils\switches.h"
 
-void constructScreenMS(ScreenMS* pScreenMS, SDL_Renderer* renderer) {
+void constructScreenMS(ScreenMS* pScreenMS, int difficulty, SDL_Renderer* renderer) {
     int iGridLength = 15;
-    int iDifficulty = 1;
+    int iDifficulty = difficulty;
     int iMinesAmount = round(iGridLength * iGridLength / (6 / iDifficulty) / 2);
     constructMSBoard(&pScreenMS->oBoard, iGridLength, iMinesAmount);
     pScreenMS->loop = Mix_LoadMUS("audio/main_loop.mp3");
@@ -19,6 +19,15 @@ void loadMSSDLRessources(MSSDL_Ressources* SDLRessources, SDL_Renderer* renderer
     SDLRessources->mineTexture = SDL_CreateTextureFromSurface(renderer, SDLRessources->mineImg);
 }
 
+void destroyScreenMS(void* pScreenMS) {
+    free(((ScreenMS*)pScreenMS)->oBoard.grid);
+    TTF_CloseFont(((ScreenMS*)pScreenMS)->SDLRessources.font);
+    SDL_FreeSurface(((ScreenMS*)pScreenMS)->SDLRessources.flagImg);
+    SDL_FreeSurface(((ScreenMS*)pScreenMS)->SDLRessources.mineImg);
+    SDL_DestroyTexture(((ScreenMS*)pScreenMS)->SDLRessources.flagTexture);
+    SDL_DestroyTexture(((ScreenMS*)pScreenMS)->SDLRessources.mineTexture);
+    Mix_FreeMusic(((ScreenMS*)pScreenMS)->loop);
+}
 
 /**
 * @param void* activeScreen, contains SDLRessources & Board
@@ -32,10 +41,6 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
 
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
-
-
-    SDL_RenderClear(renderer);
-
     for (int iRow = 0; iRow < *iGridLength; iRow++) {
         for (int iCol = 0; iCol < *iGridLength; iCol++)
         {
@@ -106,8 +111,10 @@ void displayMSGame(void* activeScreen, SDL_Window* window, SDL_Renderer* rendere
 
                     SDL_FreeSurface(pRessources->message);
                     SDL_DestroyTexture(pRessources->indicTile);
+                    
                 }
             }
+            SDL_SetRenderDrawColor(renderer, 40, 6, 66, 255);
         }
     }
 }
@@ -140,3 +147,20 @@ void MSGameEventsHandler(MainScreen* oMainScreen, SDL_Event* event) {
         break;
     }
 }
+
+
+/**
+* 
+*SDL_Rect* caseDAffichage
+* SDL_Surface* adresseImage
+* SDL_Texture* ImageTexture 
+* 
+* 
+* adresseImage = "/images/personnage/mine.png"
+* ImageTexture = adresseImage
+* 
+* caseDaffichage.w, .h = 50;
+* caseDaffichage.x, .y = 100,100;
+* ImageTexture -> SDL_Rect 
+* 
+*/

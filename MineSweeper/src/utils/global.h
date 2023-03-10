@@ -12,6 +12,8 @@ typedef struct MainScreen {
     SDL_Renderer* renderer;
     void (*displayScreen)(void* activeScreen, SDL_Window* window, SDL_Renderer* renderer);
     void (*eventsHandler)(MainScreen* oMainScreen, SDL_Event* events);
+    void (*destroyActiveScreen)(void* activeScreen);
+    int isAppRunning;
 } MainScreen;
 
 void constructMainScreen(MainScreen* oMainScreen);
